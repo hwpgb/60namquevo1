@@ -44,7 +44,7 @@ const mkPrincipals=():Page[]=>[
 {t:'open',kind:'principals',title:'Hiệu trưởng qua các thời kỳ',yrs:'1966 — 2026',txt:'Những người đã giữ ngọn lửa của nhà trường qua từng thời kỳ.'},
 ...[0,1,2].map((i):Page=>({t:'pr',s:[0,1,2,3].map((j):Slot=>{const p=PRINCIPALS[i*4+j];return {src:'',cap:p?p[0]+' · '+p[1]:'Họ và tên · Nhiệm kỳ'}})}))];
 
-const BLOB='https://i4ylyd7er3r63ity.public.blob.vercel-storage.com';
+const BLOB='https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com';
 const urls=(prefix:string,n:number):string[]=>Array.from({length:n},(_,i)=>BLOB+'/'+prefix+'-'+String(i+1).padStart(3,'0')+'.jpg');
 const photoSection=(title:string,yrs:string,list:string[]):Page[]=>{
 const pages:Page[]=[{t:'open',kind:'class',title,yrs,txt:'Những khoảnh khắc được lưu giữ.'}];

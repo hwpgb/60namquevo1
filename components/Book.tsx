@@ -10,7 +10,7 @@ import GateBg from './GateBg';
 
 const EDITORS=(process.env.NEXT_PUBLIC_EDITOR_EMAILS||'').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
 const FRAME='https://i.postimg.cc/FHy6s9ZS/Phac-hoa-cong-truong-Que-Vo-So-1.png';
-const LOGO='https://i4ylyd7er3r63ity.public.blob.vercel-storage.com/logo-60nam.png';
+const LOGO='https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/logo-60nam.png';
 const FRAME_STYLE:React.CSSProperties={position:'absolute',inset:0,pointerEvents:'none',backgroundImage:`url(${FRAME})`,backgroundRepeat:'no-repeat',backgroundPosition:'center bottom',backgroundSize:'max(100vw,120vh) auto',mixBlendMode:'multiply',opacity:.85};
 const EASE='cubic-bezier(.65,0,.2,1)';
 const CSS=`
@@ -249,23 +249,11 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 }
 
 const patchPages=(rawPages:Page[]):Page[]=>{
-  let pages=rawPages;
   const defPages=defaultPages();
-  const has11A2=pages.some(p=>p.title&&p.title.includes('11A2'));
-  const hasFull11A1=pages.filter(p=>p.s&&p.s.some(slot=>slot.src&&slot.src.includes('lop-11a1'))).length>=10;
-  if(!has11A2||!hasFull11A1||pages.length<115){
-    const def11A1Idx=defPages.findIndex(p=>p.title==='Lớp 11A1');
-    const p11A1Idx=pages.findIndex(p=>p.title==='Lớp 11A1');
-    if(def11A1Idx!==-1){
-      if(p11A1Idx!==-1){
-        const before11A1=pages.slice(0,p11A1Idx);
-        const from11A1=defPages.slice(def11A1Idx);
-        pages=[...before11A1,...from11A1];
-      }else{
-        pages=defPages;
-      }
-    }
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<115){
+    return defPages;
   }
+  let pages=rawPages;
 
   return pages.map((p,idx)=>{
     let txt=p.txt;
@@ -318,11 +306,12 @@ const patchPages=(rawPages:Page[]):Page[]=>{
     let s=p.s;
     if(p.s&&p.s.length>0){
       s=p.s.map(slot=>{
-        const src=slot.src||'';
+        const cleanSrc=(slot.src||'').replace('i4ylyd7er3r63ity.public.blob.vercel-storage.com','gxq1ht10fih6sw0u.public.blob.vercel-storage.com');
+        const src=cleanSrc;
         const cap=slot.cap||'';
         const isBlank=!cap||cap.trim()===''||cap==='\xa0'||cap==='Chú thích ký ức…'||cap==='Tên video…'||cap==='Chú thích…';
         if(!isBlank&&!cap.startsWith('Cựu học sinh Lớp 8A')&&!cap.startsWith('Tập thể Lớp 11A1')){
-          return slot;
+          return {...slot,src:cleanSrc};
         }
         let newCap='';
         if(src.includes('ky-niem-50-nam')||(idx>=75&&idx<=79)){
@@ -364,9 +353,9 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           newCap='Lớp 12E2 K27 (1993 – 1996)';
         }
         if(newCap&&isBlank){
-          return {...slot,cap:newCap};
+          return {...slot,src:cleanSrc,cap:newCap};
         }
-        return slot;
+        return {...slot,src:cleanSrc};
       });
     }
 

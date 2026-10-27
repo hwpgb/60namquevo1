@@ -33,16 +33,30 @@ mkTx('50 năm một chặng đường (2016)','Ngày 13/11/2016, trường tổ 
 mkTx('Danh hiệu và thành tích','Huân chương Lao động hạng Ba (năm học 2003–2004), Cờ thi đua của Thủ tướng Chính phủ cùng nhiều Bằng khen của Bộ Giáo dục và Đào tạo, UBND tỉnh Bắc Ninh. Năm học 2023–2024: 78 giải học sinh giỏi cấp tỉnh (6 Nhất, 28 Nhì, 17 Ba, 27 Khuyến khích), 631/631 thí sinh đỗ tốt nghiệp THPT. Năm học 2024–2025: 7 giải Nhất, trường đón 775 học sinh lớp 10, tổng số học sinh vượt 2.000 em.'),
 mkTx('Đổi mới và chuyển đổi số (2020–2026)','Nhà trường đẩy mạnh đổi mới phương pháp dạy học và ứng dụng công nghệ; năm học 2025–2026 tham gia triển khai chương trình học Toán thích ứng ứng dụng trí tuệ nhân tạo (AI), dẫn đầu tỉnh về tỷ lệ học sinh học tập trên nền tảng số. Học sinh nhà trường dẫn đầu toàn quốc về số lượng tham gia chiến dịch trực tuyến “Tiếp sức mùa thi 2026”.'),
 mkTx('Hôm nay và mai sau','Trải qua 60 năm xây dựng và phát triển, Trường THPT Quế Võ số 1 đã viết nên một chặng đường đáng tự hào của giáo dục Bắc Ninh. Thành quả hôm nay là kết tinh nỗ lực của nhiều thế hệ cán bộ quản lý, giáo viên, nhân viên và học sinh. Phát huy truyền thống hiếu học của vùng đất Kinh Bắc, nhà trường tiếp tục hướng tới đào tạo những thế hệ học sinh có kiến thức, đạo đức, bản lĩnh và khát vọng cống hiến cho xã hội.')];
-const PRINCIPALS:[string,string][]=[
-['Thầy Nguyễn Pha','Từ khi thành lập (1965–1966)'],
-['Thầy Vũ Bách','Từ năm 1991'],
-['Thầy Lê Đức Vĩ','1997 – khoảng 2006'],
-['Thầy Nguyễn Văn Nhiên','2006 – 2013'],
-['Thầy Lê Tiến Dũng','8/2013 – 5/2022'],
-['Thầy Phan Văn Hiếu','5/2022 – nay']];
+export const PRINCIPALS:[string,string,string][]=[
+['Thầy Trịnh Văn Nhận','1981 – 1987','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/trinh-van-nhan.jpg'],
+['Thầy Nguyễn Hồng Việt','1987 – 1991','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/nguyen-hong-viet.jpg'],
+['Thầy Vũ Văn Bách','1991 – 1997','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/vu-van-bach.jpg'],
+['Thầy Lê Đức Vĩ','1997 – 2006','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/le-duc-vi.jpg'],
+['Thầy Nguyễn Văn Nhiên','2006 – 2013','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/nguyen-van-nhien.jpg'],
+['Thầy Lê Tiến Dũng','2013 – 2022','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/le-tien-dung.jpg']];
+
 const mkPrincipals=():Page[]=>[
 {t:'open',kind:'principals',title:'Hiệu trưởng qua các thời kỳ',yrs:'1966 — 2026',txt:'Những người đã giữ ngọn lửa của nhà trường qua từng thời kỳ.'},
-...[0,1,2].map((i):Page=>({t:'pr',s:[0,1,2,3].map((j):Slot=>{const p=PRINCIPALS[i*4+j];return {src:'',cap:p?p[0]+' · '+p[1]:'Họ và tên · Nhiệm kỳ'}})}))];
+{t:'pr',s:[
+  {src:PRINCIPALS[0][2],cap:`${PRINCIPALS[0][0]} · ${PRINCIPALS[0][1]}`},
+  {src:PRINCIPALS[1][2],cap:`${PRINCIPALS[1][0]} · ${PRINCIPALS[1][1]}`},
+  {src:PRINCIPALS[2][2],cap:`${PRINCIPALS[2][0]} · ${PRINCIPALS[2][1]}`},
+  {src:PRINCIPALS[3][2],cap:`${PRINCIPALS[3][0]} · ${PRINCIPALS[3][1]}`}
+]},
+{t:'pr',s:[
+  {src:PRINCIPALS[4][2],cap:`${PRINCIPALS[4][0]} · ${PRINCIPALS[4][1]}`},
+  {src:PRINCIPALS[5][2],cap:`${PRINCIPALS[5][0]} · ${PRINCIPALS[5][1]}`},
+  {src:'',cap:'Thầy Phan Văn Hiếu · 2022 – nay'},
+  {src:'',cap:'Họ và tên · Nhiệm kỳ'}
+]},
+{t:'q',txt:'“Tôn sư trọng đạo — Uống nước nhớ nguồn. Tri ân công lao các thế hệ lãnh đạo nhà trường qua các thời kỳ.”',by:'THẦY TRÒ QUẾ VÕ SỐ 1'}
+];
 
 const BLOB='https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com';
 const urls=(prefix:string,n:number):string[]=>Array.from({length:n},(_,i)=>BLOB+'/'+prefix+'-'+String(i+1).padStart(3,'0')+'.jpg');
@@ -56,10 +70,10 @@ type PS=[string,string,string,number];
 const PHOTO_BY_ERA:PS[][]=[
 [['c1-lop-8a-khoa-1972-1975','Lớp 8A','Khóa 1972 – 1975',8]],
 [['c2-anh-1984-1985','Ảnh năm 1984 – 1985','1984 – 1985',3]],
-[['c3-anh-1993-1994','Ảnh năm 1993 – 1994','1993 – 1994',1]],
-[['c4-anh-1996','Ảnh năm 1996','1996',3],['c4-ky-niem-30-nam','Kỷ niệm 30 năm','Kỷ niệm',2],['c4-anh-1997-1998','Ảnh năm 1997 – 1998','1997 – 1998',1],['c4-khoa-1997-2000','Khóa 1997 – 2000','1997 – 2000',14],['c4-khoa-1997-2000-giao-vien-va-nha-truong','Thầy cô và nhà trường','Khóa 1997 – 2000',13],['c4-khoa-1997-2000-lop-co-kim','Lớp cô Kim','Khóa 1997 – 2000',7],['c4-khoa-1997-2000-lop-mama','Lớp Mama','Khóa 1997 – 2000',2],['c4-lop-12a1-khoa-1998-2001','Lớp 12A1','Khóa 1998 – 2001',2],['c4-ngay-20-11-2001','Ngày 20/11/2001','2001',2],['c4-khoa-2003-2006-xuan-2003','Xuân 2003','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-nam-2004','Năm 2004','Khóa 2003 – 2006',4],['c4-khoa-2003-2006-nam-2006','Năm 2006','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-lop-bac-my','Lớp bác Mỹ','Khóa 2003 – 2006',4],['c4-khoa-2004-2007','Khóa 2004 – 2007','2004 – 2007',4]],
+[],
+[['c4-anh-1996','Ảnh năm 1996','1996',3],['c4-ky-niem-30-nam','Kỷ niệm 30 năm','Kỷ niệm',2],['c4-khoa-1997-2000','Khóa 1997 – 2000','1997 – 2000',14],['c4-khoa-1997-2000-giao-vien-va-nha-truong','Thầy cô và nhà trường','Khóa 1997 – 2000',13],['c4-khoa-1997-2000-lop-co-kim','Lớp cô Kim','Khóa 1997 – 2000',7],['c4-khoa-1997-2000-lop-mama','Lớp Mama','Khóa 1997 – 2000',2],['c4-lop-12a1-khoa-1998-2001','Lớp 12A1','Khóa 1998 – 2001',2],['c4-ngay-20-11-2001','Ngày 20/11/2001','2001',2],['c4-khoa-2003-2006-xuan-2003','Xuân 2003','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-nam-2004','Năm 2004','Khóa 2003 – 2006',4],['c4-khoa-2003-2006-nam-2006','Năm 2006','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-lop-bac-my','Lớp bác Mỹ','Khóa 2003 – 2006',4],['c4-khoa-2004-2007','Khóa 2004 – 2007','2004 – 2007',4]],
 [['c5-khoa-2009-2011','Khóa 2009 – 2011','2009 – 2011',2]],
-[['c6-ky-niem-50-nam','Kỷ niệm 50 năm','2016',18],['c6-khoa-2017-2020','Khóa 2017 – 2020','2017 – 2020',2],['c6-lop-11a1-khoa-59','Lớp 11A1','Khóa 59',60]]];
+[['c6-ky-niem-50-nam','Kỷ niệm 50 năm','2016',18],['c6-khoa-2017-2020','Khóa 2017 – 2020','2017 – 2020',2],['c6-lop-11a1-khoa-59','Lớp 11A1','Khóa 59',60],['c6-lop-11a2-khoa-59','Lớp 11A2','Khóa 59 (2024 – 2027)',8],['c6-lop-11a6-khoa-59','Lớp 11A6','Khóa 59 (2024 – 2027)',8],['c6-lop-11a10-khoa-59','Lớp 11A10','Khóa 59 (2024 – 2027)',1],['c6-lop-11a12-khoa-59','Lớp 11A12','Khóa 59 (2024 – 2027)',2],['c6-lop-10a5-khoa-60','Lớp 10A5','Khóa 60 (2025 – 2028)',1],['c6-lop-10a9-khoa-60','Lớp 10A9','Khóa 60 (2025 – 2028)',1]]];
 export const ERA_TRANSITION_QUOTES: [string, string][] = [
   ['“Những năm tháng bom đạn sơ tán, lớp học dựng bằng tre nứa giữa lòng dân; ngọn đèn dầu soi sáng từng trang sách, thắp lên ngọn lửa hiếu học Quế Võ.”', 'KÝ ỨC NHỮNG NGÀY ĐẦU (1966 – 1975)'],
   ['“Gian khó tôi luyện ý chí, thiếu thốn nuôi lớn ước mơ. Dưới mái trường thân yêu, tình thầy trò như ngọn lửa sưởi ấm những mùa đông Kinh Bắc.”', 'GIỮ LỬA QUA NĂM THÁNG'],
@@ -70,11 +84,8 @@ export const ERA_TRANSITION_QUOTES: [string, string][] = [
 ];
 
 export const NEW_K59_CLASSES: [string, string, string][] = [
-  ['Lớp 11A2', 'Khóa 59 (2024 – 2027)', 'Những khoảnh khắc thanh xuân rực rỡ và kỷ niệm gắn bó của tập thể 11A2.'],
   ['Lớp 11A4', 'Khóa 59 (2024 – 2027)', 'Nhiệt huyết, sáng tạo và những kỷ niệm đáng nhớ của tuổi học trò 11A4.'],
-  ['Lớp 11A10', 'Khóa 59 (2024 – 2027)', 'Đoàn kết, tự tin cùng nhau viết nên những năm tháng học trò đáng nhớ của 11A10.'],
-  ['Lớp 11A11', 'Khóa 59 (2024 – 2027)', 'Nụ cười rạng rỡ, tình bạn trong sáng và hoài bão tuổi trẻ của tập thể 11A11.'],
-  ['Lớp 11A12', 'Khóa 59 (2024 – 2027)', 'Nơi lưu giữ từng kỷ niệm đẹp đẽ, đong đầy yêu thương của tập thể 11A12.']
+  ['Lớp 11A11', 'Khóa 59 (2024 – 2027)', 'Nụ cười rạng rỡ, tình bạn trong sáng và hoài bão tuổi trẻ của tập thể 11A11.']
 ];
 
 export function defaultPages():Page[]{

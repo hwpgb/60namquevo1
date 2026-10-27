@@ -1,0 +1,2 @@
+import Book from '../components/Book';
+export default function Page(){return(<main><section className='sr'><h1>60 năm — Một dòng ký ức | Trường THPT Quế Võ số 1 (1966–2026)</h1><p>Cuốn sách ký ức số lưu giữ ảnh, video và câu chuyện của thầy trò Trường THPT Quế Võ số 1 qua sáu thập kỷ, chia theo từng 10 năm: 1966–1975, 1976–1985, 1986–1995, 1996–2005, 2006–2015, 2016–2026; trong mỗi giai đoạn là ảnh các khóa, các lớp. Có lược sử nhà trường và hiệu trưởng qua các thời kỳ. Tự hào truyền thống, vững bước tương lai.</p></section><Book/></main>)}

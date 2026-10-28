@@ -10,7 +10,7 @@ import GateBg from './GateBg';
 
 const EDITORS=(process.env.NEXT_PUBLIC_EDITOR_EMAILS||'').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
 const FRAME='https://i.postimg.cc/FHy6s9ZS/Phac-hoa-cong-truong-Que-Vo-So-1.png';
-const LOGO='https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/logo-60nam.png';
+const LOGO='/logo-60nam.png';
 const FRAME_STYLE:React.CSSProperties={position:'absolute',inset:0,pointerEvents:'none',backgroundImage:`url(${FRAME})`,backgroundRepeat:'no-repeat',backgroundPosition:'center bottom',backgroundSize:'max(100vw,120vh) auto',mixBlendMode:'multiply',opacity:.85};
 const EASE='cubic-bezier(.65,0,.2,1)';
 const CSS=`

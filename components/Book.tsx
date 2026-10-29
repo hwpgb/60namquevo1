@@ -250,7 +250,7 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 
 const patchPages=(rawPages:Page[]):Page[]=>{
   const defPages=defaultPages();
-  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<115){
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<145){
     return defPages;
   }
   let pages=rawPages;

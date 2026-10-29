@@ -60,20 +60,71 @@ const mkPrincipals=():Page[]=>[
 
 const BLOB='https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com';
 const urls=(prefix:string,n:number):string[]=>Array.from({length:n},(_,i)=>BLOB+'/'+prefix+'-'+String(i+1).padStart(3,'0')+'.jpg');
-const photoSection=(title:string,yrs:string,list:string[]):Page[]=>{
-const pages:Page[]=[{t:'open',kind:'class',title,yrs,txt:'Những khoảnh khắc được lưu giữ.'}];
-for(let i=0;i<list.length;i+=4)pages.push({t:'ph',s:[0,1,2,3].map((k):Slot=>list[i+k]?{src:list[i+k],cap:''}:{src:'',cap:'Chú thích ký ức…'})});
-if(pages.length%2!==0)pages.push(blank());
-return pages;
+
+export const QUOTE_POOL: [string, string][] = [
+  ['“Tuổi thanh xuân giống như một cơn mưa rào, dẫu từng bị cảm lạnh vì tắm mưa, bạn vẫn muốn đắm mình trong cơn mưa ấy lần nữa.”', 'KÝ ỨC THANH XUÂN'],
+  ['“Thời gian trôi qua, lớp học năm xưa giờ đã cũ, nhưng ký ức về thầy cô và bạn bè thì mãi vẹn nguyên như ngày đầu.”', 'MÁI TRƯỜNG MẾN YÊU'],
+  ['“Có một nơi để về đó là nhà. Có những người để yêu thương đó là gia đình. Có cả hai đó là hạnh phúc — THPT Quế Võ số 1.”', 'NGÔI NHÀ CHUNG'],
+  ['“Tiếng trống trường vang lên năm ấy đã khép lại một thời áo trắng, nhưng mở ra cả một trời ước mơ và khát vọng.”', 'HOÀI NIỆM MỘT THỜI'],
+  ['“Những người thầy, người cô đã dành cả cuộc đời lặng lẽ chèo đò đưa bao thế hệ học trò sang sông cập bến tri thức.”', 'TRI ÂN THẦY CÔ'],
+  ['“Bạn bè cũ, lớp học xưa, tiếng cười giòn tan dưới tán bàng rợp bóng… Tất cả hóa thành hành trang quý giá nhất theo ta suốt cuộc đời.”', 'TÌNH BẠN TUỔI TRÒ'],
+  ['“Mỗi bức ảnh là một mảnh ghép của thanh xuân, lưu giữ trọn vẹn những nụ cười rạng rỡ nhất của chúng ta.”', 'KHOẢNH KHẮC VÔ GIÁ'],
+  ['“Sáu mươi năm tự hào một mái trường — Nơi ươm mầm tri thức, nâng cánh ước mơ cho bao thế hệ học sinh Quế Võ.”', 'TỰ HÀO 60 NĂM']
+];
+
+let quoteCounter = 0;
+const nextQuote = (secTitle: string): Page => {
+  const q = QUOTE_POOL[quoteCounter % QUOTE_POOL.length];
+  quoteCounter++;
+  return { t: 'q', txt: q[0], by: `${secTitle.toUpperCase()} · ${q[1]}` };
 };
-type PS=[string,string,string,number];
-const PHOTO_BY_ERA:PS[][]=[
-[['c1-lop-8a-khoa-1972-1975','Lớp 8A','Khóa 1972 – 1975',8]],
-[['c2-anh-1984-1985','Ảnh năm 1984 – 1985','1984 – 1985',3]],
-[],
-[['c4-anh-1996','Ảnh năm 1996','1996',3],['c4-ky-niem-30-nam','Kỷ niệm 30 năm','Kỷ niệm',2],['c4-khoa-1997-2000-giao-vien-va-nha-truong','Thầy cô và nhà trường','Khóa 1997 – 2000',13],['c4-khoa-1997-2000-lop-co-kim','Lớp cô Kim','Khóa 1997 – 2000',21],['c4-khoa-1997-2000-lop-mama','Lớp Mama','Khóa 1997 – 2000',2],['c4-lop-12a1-khoa-1998-2001','Lớp 12A1','Khóa 1998 – 2001',2],['c4-ngay-20-11-2001','Ngày 20/11/2001','2001',2],['c4-khoa-2003-2006-xuan-2003','Xuân 2003','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-nam-2004','Năm 2004','Khóa 2003 – 2006',4],['c4-khoa-2003-2006-nam-2006','Năm 2006','Khóa 2003 – 2006',3],['c4-khoa-2003-2006-lop-bac-my','Lớp bác Mỹ','Khóa 2003 – 2006',4],['c4-khoa-2004-2007','Khóa 2004 – 2007','2004 – 2007',4]],
-[['c5-khoa-2009-2011','Khóa 2009 – 2011','2009 – 2011',2]],
-[['c6-ky-niem-50-nam','Kỷ niệm 50 năm','2016',18],['c6-khoa-2017-2020','Khóa 2017 – 2020','2017 – 2020',2],['c6-lop-11a1-khoa-59','Lớp 11A1','Khóa 59',60],['c6-lop-11a2-khoa-59','Lớp 11A2','Khóa 59 (2024 – 2027)',8],['c6-lop-11a6-khoa-59','Lớp 11A6','Khóa 59 (2024 – 2027)',8],['c6-lop-11a10-khoa-59','Lớp 11A10','Khóa 59 (2024 – 2027)',1],['c6-lop-11a12-khoa-59','Lớp 11A12','Khóa 59 (2024 – 2027)',2],['c6-lop-10a5-khoa-60','Lớp 10A5','Khóa 60 (2025 – 2028)',1],['c6-lop-10a9-khoa-60','Lớp 10A9','Khóa 60 (2025 – 2028)',1]]];
+
+const photoSection = (title: string, yrs: string, list: string[], perPage: number = 2): Page[] => {
+  const pages: Page[] = [{ t: 'open', kind: 'class', title, yrs, txt: 'Những khoảnh khắc được lưu giữ.' }];
+  for (let i = 0; i < list.length; i += perPage) {
+    const chunk = list.slice(i, i + perPage);
+    pages.push({
+      t: 'ph',
+      s: chunk.map((src): Slot => ({ src, cap: '' }))
+    });
+  }
+  if (pages.length % 2 !== 0) pages.push(nextQuote(title));
+  return pages;
+};
+
+type PS = [string, string, string, number, number?];
+const PHOTO_BY_ERA: PS[][] = [
+  [['c1-lop-8a-khoa-1972-1975', 'Lớp 8A', 'Khóa 1972 – 1975', 8, 2]],
+  [['c2-anh-1984-1985', 'Ảnh năm 1984 – 1985', '1984 – 1985', 3, 2]],
+  [],
+  [
+    ['c4-anh-1996', 'Ảnh năm 1996', '1996', 3, 2],
+    ['c4-ky-niem-30-nam', 'Kỷ niệm 30 năm', 'Kỷ niệm', 2, 2],
+    ['c4-khoa-1997-2000-giao-vien-va-nha-truong', 'Thầy cô và nhà trường', 'Khóa 1997 – 2000', 13, 4],
+    ['c4-khoa-1997-2000', 'Khóa 1997 – 2000', 'Khóa 1997 – 2000', 14, 2],
+    ['c4-khoa-1997-2000-lop-co-kim', 'Lớp cô Kim', 'Khóa 1997 – 2000', 7, 2],
+    ['c4-khoa-1997-2000-lop-mama', 'Lớp Mama', 'Khóa 1997 – 2000', 2, 2],
+    ['c4-lop-12a1-khoa-1998-2001', 'Lớp 12A1', 'Khóa 1998 – 2001', 2, 2],
+    ['c4-ngay-20-11-2001', 'Ngày 20/11/2001', '2001', 2, 2],
+    ['c4-khoa-2003-2006-xuan-2003', 'Xuân 2003', 'Khóa 2003 – 2006', 3, 2],
+    ['c4-khoa-2003-2006-nam-2004', 'Năm 2004', 'Khóa 2003 – 2006', 4, 2],
+    ['c4-khoa-2003-2006-nam-2006', 'Năm 2006', 'Khóa 2003 – 2006', 3, 2],
+    ['c4-khoa-2003-2006-lop-bac-my', 'Lớp bác Mỹ', 'Khóa 2003 – 2006', 4, 2],
+    ['c4-khoa-2004-2007', 'Khóa 2004 – 2007', '2004 – 2007', 4, 2]
+  ],
+  [['c5-khoa-2009-2011', 'Khóa 2009 – 2011', '2009 – 2011', 2, 2]],
+  [
+    ['c6-ky-niem-50-nam', 'Kỷ niệm 50 năm', '2016', 18, 2],
+    ['c6-khoa-2017-2020', 'Khóa 2017 – 2020', '2017 – 2020', 2, 2],
+    ['c6-lop-11a1-khoa-59', 'Lớp 11A1', 'Khóa 59', 60, 4],
+    ['c6-lop-11a2-khoa-59', 'Lớp 11A2', 'Khóa 59 (2024 – 2027)', 8, 2],
+    ['c6-lop-11a6-khoa-59', 'Lớp 11A6', 'Khóa 59 (2024 – 2027)', 8, 2],
+    ['c6-lop-11a10-khoa-59', 'Lớp 11A10', 'Khóa 59 (2024 – 2027)', 1, 2],
+    ['c6-lop-11a12-khoa-59', 'Lớp 11A12', 'Khóa 59 (2024 – 2027)', 2, 2],
+    ['c6-lop-10a5-khoa-60', 'Lớp 10A5', 'Khóa 60 (2025 – 2028)', 1, 2],
+    ['c6-lop-10a9-khoa-60', 'Lớp 10A9', 'Khóa 60 (2025 – 2028)', 1, 2]
+  ]
+];
 export const ERA_TRANSITION_QUOTES: [string, string][] = [
   ['“Những năm tháng bom đạn sơ tán, lớp học dựng bằng tre nứa giữa lòng dân; ngọn đèn dầu soi sáng từng trang sách, thắp lên ngọn lửa hiếu học Quế Võ.”', 'KÝ ỨC NHỮNG NGÀY ĐẦU (1966 – 1975)'],
   ['“Gian khó tôi luyện ý chí, thiếu thốn nuôi lớn ước mơ. Dưới mái trường thân yêu, tình thầy trò như ngọn lửa sưởi ấm những mùa đông Kinh Bắc.”', 'GIỮ LỬA QUA NĂM THÁNG'],
@@ -89,18 +140,19 @@ export const NEW_K59_CLASSES: [string, string, string][] = [
 ];
 
 export function defaultPages():Page[]{
+quoteCounter = 0;
 const P:Page[]=[{t:'cover'},{t:'q',txt:'“Nơi đây, mỗi viên gạch đều thuộc về một ký ức.”',by:'THẦY TRÒ QUẾ VÕ SỐ 1'}];
 P.push(...mkHistory(),...mkPrincipals());
 ERAS.forEach((e,i)=>{
   const qInfo = ERA_TRANSITION_QUOTES[i] || ['“Nơi đây, mỗi viên gạch đều thuộc về một ký ức.”', 'THẦY TRÒ QUẾ VÕ SỐ 1'];
   P.push({t:'open',kind:'era',title:e[1],yrs:e[0],txt:e[2]},{t:'q',txt:qInfo[0],by:qInfo[1]});
-  for(const [prefix,title,yrs,n] of PHOTO_BY_ERA[i])P.push(...photoSection(title,yrs,urls(prefix,n)));
+  for(const [prefix,title,yrs,n,perPage] of PHOTO_BY_ERA[i])P.push(...photoSection(title,yrs,urls(prefix,n),perPage||2));
   if(i === 5){
     // Thêm các lớp mới sau 11A1 Khóa 59
     NEW_K59_CLASSES.forEach(([title, yrs, desc]) => {
       P.push(
         {t:'open',kind:'class',title,yrs,txt:desc},
-        {t:'ph',s:[0,1,2,3].map(()=>({src:'',cap:`Kỷ niệm ${title}…`}))}
+        {t:'ph',s:[0,1].map(()=>({src:'',cap:`Kỷ niệm ${title}…`}))}
       );
     });
   }

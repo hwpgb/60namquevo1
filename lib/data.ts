@@ -158,6 +158,19 @@ ERAS.forEach((e,i)=>{
   }
 });
 P.push({t:'open',kind:'video',title:'Video kỷ niệm',yrs:'Những thước phim xưa',txt:'Nơi lưu giữ những đoạn phim thầy trò, lễ hội, buổi diễn… Bấm vào khung để xem.'},mkVd1(),vdText(),mkVd1(),vdText(),mkVd1(),vdText());
+P.push(
+  {
+    t: 'tx',
+    title: 'Nguồn Ảnh + video',
+    txt: 'https://thptquevo1.bacninh.edu.vn\nhttps://www.facebook.com/Phunggiabao2010/\nCô Nguyễn Thị Kim Anh - 11A1\n\nHọc sinh các lớp\nCựu học sinh các năm',
+    note: 'Chúng em rất cảm kích vì những tư liệu quý này ạ, xin chân thành cảm ơn'
+  },
+  {
+    t: 'tx',
+    title: 'Team Làm : Web Dự Phòng',
+    txt: 'Trưởng nhóm : Phùng Gia Bảo\nThành Viên : Phương Thành An, Phạm Ngọc Tùng, Trần Ngọc Minh, Nguyễn Hoàng An, Lê Phạm Thúy Ngân, Trần Hải Ninh\nCode chính : Gia Bảo, Ngọc Minh\nTìm, lọc Ảnh: Thành An\nNội dung : Tùng\nVideo : Hoàng An\nThiết kế bìa, font chữ, hoàn thiện và kiểm tra chất lượng: Ninh, Ngân.'
+  }
+);
 if(P.length%2===0)P.push({t:'q',txt:'“Sáu mươi năm — một chặng đường vinh quang. Dù ở bất cứ nơi đâu, chỉ cần ngoảnh lại, Quế Võ số 1 vẫn luôn là ngôi nhà chan chứa tình thương đón ta trở về.”',by:'HỘI NGỘ & TRI ÂN — 60 NĂM QUẾ VÕ 1'});
 P.push({t:'end'});
 return P;

@@ -99,8 +99,15 @@ html.narrow .endp .endmsg{font-size:18px}
 .pgmenu button{all:unset;cursor:pointer;font-size:12.5px;padding:7px 10px;border-radius:8px;color:#f6e7bd;white-space:nowrap}
 .pgmenu button:hover{background:rgba(255,255,255,.12)}
 .pgmenu button.dl{color:#ffb4a8}
-.pnote{margin-top:6px;font-size:13px;line-height:1.6;color:#4b3820;white-space:pre-wrap;max-height:24%;overflow:hidden;flex:none}
+.pnote{margin-top:auto;padding-top:10px;border-top:1px dashed rgba(143,95,28,.45);font:italic 500 clamp(13px,calc(var(--w) * 0.034),16px)/1.6 'Lora',serif;color:#4b3820;white-space:pre-wrap;max-height:28%;overflow:hidden;flex:none}
 html.narrow .pnote{font-size:13.5px}
+.face.drop-target-active{box-shadow:inset 0 0 0 3px var(--gold),inset 0 0 25px rgba(212,175,55,.25) !important;outline:2.5px dashed var(--gold) !important;outline-offset:-8px !important;background-color:rgba(212,175,55,.05) !important}
+.slot.slot-drop-target{outline:3px solid #27ae60 !important;outline-offset:4px !important;transform:scale(1.04) !important}
+.root.editing .slot[draggable=true]{cursor:grab}
+.root.editing .slot.dragging-slot{opacity:0.4;transform:scale(0.95)}
+.slbar .move-group{border-top:1px solid rgba(255,255,255,.2);margin-top:3px;padding-top:3px;display:flex;gap:3px;justify-content:center}
+.slbar .move-group button{font-size:11px;padding:3px 6px;font-weight:600;color:#f7ecd2;background:rgba(143,95,28,.45);border-radius:4px}
+.slbar .move-group button:hover{background:rgba(143,95,28,.85);color:#fff}
 .root:not(.editing) .slot figcaption:empty,.root:not(.editing) .pnote:empty,.root:not(.editing) .tx h2:empty,.root:not(.editing) .open h2:empty{display:none}
 .root.editing .pnote:empty:before,.root.editing .tx h2:empty:before,.root.editing .open h2:empty:before{content:attr(data-ph);opacity:.45;font-style:italic;font-weight:400}
 #tb2{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:45;display:flex;gap:6px;padding:6px 8px;border-radius:999px;flex-wrap:wrap;justify-content:center;max-width:94vw}
@@ -250,7 +257,7 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 
 const patchPages=(rawPages:Page[]):Page[]=>{
   const defPages=defaultPages();
-  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<145){
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<151){
     return defPages;
   }
   let pages=rawPages;
@@ -954,6 +961,78 @@ export default function Book(){
     const up=()=>{removeEventListener('pointermove',mvf);removeEventListener('pointerup',up);removeEventListener('pointercancel',up)};
     addEventListener('pointermove',mvf);addEventListener('pointerup',up);addEventListener('pointercancel',up);
   };
+  const moveSlotToPage = (fromI: number, fromK: number, toI: number, toK?: number) => {
+    if (fromI < 0 || fromI >= Pref.current.length || toI < 0 || toI >= Pref.current.length) return;
+    const curPages = Pref.current;
+    const fromP = curPages[fromI];
+    if (!fromP || !fromP.s || !fromP.s[fromK]) return;
+
+    const movingSlot = { ...fromP.s[fromK], dx: 0, dy: 0 };
+
+    if (fromI === toI) {
+      if (toK === undefined || toK === fromK) return;
+      const curSlots = [...fromP.s];
+      curSlots.splice(fromK, 1);
+      curSlots.splice(toK, 0, movingSlot);
+      const next = curPages.map((p, idx) => idx === fromI ? { ...p, s: curSlots } : p);
+      commit(next);
+      toast(`Đã đổi vị trí ảnh trên trang ${fromI + 1} — nhớ bấm 💾 Lưu`);
+      return;
+    }
+
+    const toP = curPages[toI];
+    const maxSlots = toP.t === 'pr' ? 6 : 9;
+    const targetSlots = toP.s ? [...toP.s] : [];
+    if (targetSlots.length >= maxSlots) {
+      toast(`Trang ${toI + 1} đã đầy (${maxSlots} khung ảnh)`);
+      return;
+    }
+
+    const newSrcSlots = fromP.s.filter((_, idx) => idx !== fromK);
+    if (toK !== undefined && toK >= 0 && toK <= targetSlots.length) {
+      targetSlots.splice(toK, 0, movingSlot);
+    } else {
+      targetSlots.push(movingSlot);
+    }
+
+    const newToType = (toP.t === 'tx' || toP.t === 'q' || toP.t === 'vd' || toP.t === 'vd1') ? 'ph' : toP.t;
+    const next = curPages.map((p, idx) => {
+      if (idx === fromI) return { ...p, s: newSrcSlots };
+      if (idx === toI) return { ...p, t: newToType, s: targetSlots };
+      return p;
+    });
+
+    commit(next);
+    toast(`✓ Đã chuyển ảnh từ trang ${fromI + 1} sang trang ${toI + 1} — nhớ bấm 💾 Lưu`);
+  };
+
+  const moveSlotStep = (fromI: number, fromK: number, delta: number) => {
+    const toI = fromI + delta;
+    if (toI < 0 || toI >= Pref.current.length) {
+      toast('Không thể chuyển vượt ngoài giới hạn sách');
+      return;
+    }
+    moveSlotToPage(fromI, fromK, toI);
+    goPage(toI);
+  };
+
+  const promptMoveSlot = (fromI: number, fromK: number) => {
+    const ans = prompt(`Nhập số trang bạn muốn chuyển ảnh tới (1 đến ${Pref.current.length}):`, String(fromI + 1));
+    if (!ans) return;
+    const pg = parseInt(ans.trim(), 10);
+    if (isNaN(pg) || pg < 1 || pg > Pref.current.length) {
+      toast(`Số trang không hợp lệ (hãy nhập từ 1 đến ${Pref.current.length})`);
+      return;
+    }
+    const toI = pg - 1;
+    if (toI === fromI) {
+      toast('Ảnh đã ở trang này rồi');
+      return;
+    }
+    moveSlotToPage(fromI, fromK, toI);
+    goPage(toI);
+  };
+
   const startDrag=(e:React.PointerEvent,i:number,k:number)=>{
     e.stopPropagation();e.preventDefault();
     const s0=Pref.current[i].s![k];
@@ -962,9 +1041,98 @@ export default function Book(){
     hist.current.push(Pref.current);
     if(hist.current.length>80)hist.current.shift();
     setHn(hist.current.length);
-    const mvf=(ev:PointerEvent)=>setSlotLive(i,k,{dx:Math.round(dx0+ev.clientX-x0),dy:Math.round(dy0+ev.clientY-y0)});
-    const up=()=>{removeEventListener('pointermove',mvf);removeEventListener('pointerup',up);removeEventListener('pointercancel',up)};
-    addEventListener('pointermove',mvf);addEventListener('pointerup',up);addEventListener('pointercancel',up);
+
+    let lastTargetFace: HTMLElement | null = null;
+    let flipTimer: any = null;
+    let didFlip = false;
+
+    const clearHighlights = () => {
+      document.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
+      document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
+    };
+
+    const mvf=(ev:PointerEvent)=>{
+      setSlotLive(i,k,{dx:Math.round(dx0+ev.clientX-x0),dy:Math.round(dy0+ev.clientY-y0)});
+
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const faceEl = el?.closest('.face[data-p]') as HTMLElement | null;
+      if (faceEl !== lastTargetFace) {
+        clearHighlights();
+        lastTargetFace = faceEl;
+      }
+      if (faceEl) {
+        const targetP = parseInt(faceEl.getAttribute('data-p') || '', 10);
+        if (!isNaN(targetP) && targetP !== i) {
+          faceEl.classList.add('drop-target-active');
+        }
+      }
+
+      const slotEl = el?.closest('.slot[data-slot-k]') as HTMLElement | null;
+      if (slotEl) {
+        const targetK = parseInt(slotEl.getAttribute('data-slot-k') || '', 10);
+        if (targetK !== k || (faceEl && parseInt(faceEl.getAttribute('data-p') || '', 10) !== i)) {
+          slotEl.classList.add('slot-drop-target');
+        }
+      } else {
+        document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
+      }
+
+      if (!flipTimer) {
+        if (ev.clientX > window.innerWidth - 65) {
+          flipTimer = setTimeout(() => {
+            step(1);
+            didFlip = true;
+            flipTimer = null;
+          }, 550);
+        } else if (ev.clientX < 65) {
+          flipTimer = setTimeout(() => {
+            step(-1);
+            didFlip = true;
+            flipTimer = null;
+          }, 550);
+        }
+      } else {
+        if (ev.clientX >= 65 && ev.clientX <= window.innerWidth - 65) {
+          clearTimeout(flipTimer);
+          flipTimer = null;
+        }
+      }
+    };
+
+    const up=(ev: PointerEvent)=>{
+      clearTimeout(flipTimer);
+      removeEventListener('pointermove',mvf);
+      removeEventListener('pointerup',up);
+      removeEventListener('pointercancel',up);
+
+      const el = document.elementFromPoint(ev.clientX, ev.clientY);
+      const faceEl = el?.closest('.face[data-p]') as HTMLElement | null;
+      const slotEl = el?.closest('.slot[data-slot-k]') as HTMLElement | null;
+      clearHighlights();
+
+      if (faceEl) {
+        const targetP = parseInt(faceEl.getAttribute('data-p') || '', 10);
+        const targetK = slotEl ? parseInt(slotEl.getAttribute('data-slot-k') || '', 10) : undefined;
+        if (!isNaN(targetP) && targetP !== i) {
+          setSlotLive(i, k, { dx: 0, dy: 0 });
+          moveSlotToPage(i, k, targetP, targetK);
+          return;
+        }
+        if (!isNaN(targetP) && targetP === i && targetK !== undefined && targetK !== k) {
+          setSlotLive(i, k, { dx: 0, dy: 0 });
+          moveSlotToPage(i, k, i, targetK);
+          return;
+        }
+      }
+
+      if (didFlip) {
+        setSlotLive(i, k, { dx: 0, dy: 0 });
+      }
+    };
+
+    addEventListener('pointermove',mvf);
+    addEventListener('pointerup',up);
+    addEventListener('pointercancel',up);
   };
   const startRotate=(e:React.PointerEvent,i:number,k:number)=>{
     e.stopPropagation();e.preventDefault();
@@ -1269,13 +1437,30 @@ export default function Book(){
         : (edit ? { position: 'relative' } : undefined);
       return (
         <div className={'cell' + (isWideSpan ? ' wide' : '')} key={k} onClick={e => e.stopPropagation()}>
-          <figure className={'slot' + cls + tapeCls} style={slotStyle} onClick={e => { e.stopPropagation(); if (!edit) slotClick(i, k); }}>
+          <figure
+            className={'slot' + cls + tapeCls}
+            style={slotStyle}
+            data-slot-k={k}
+            draggable={edit}
+            onDragStart={e => {
+              if (!edit) return;
+              e.dataTransfer.setData('application/json', JSON.stringify({ fromI: i, fromK: k }));
+              e.dataTransfer.effectAllowed = 'move';
+              (e.currentTarget as HTMLElement).classList.add('dragging-slot');
+            }}
+            onDragEnd={e => {
+              (e.currentTarget as HTMLElement).classList.remove('dragging-slot');
+              document.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
+              document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
+            }}
+            onClick={e => { e.stopPropagation(); if (!edit) slotClick(i, k); }}
+          >
             <div className='ph' style={phStyle} onClick={e => { e.stopPropagation(); slotClick(i, k); }}>
               {s.src ? (adv ? <RotImg src={s.src} rot={rot} zoom={z} /> : null) : (cls ? 'ẢNH CHÂN DUNG' : 'ẢNH KỶ NIỆM')}
               {edit && (
                 <div className='slbar' onClick={e => e.stopPropagation()}>
                   <div className='g'>
-                    <button className='drgbtn' title='Kéo để di chuyển khung ảnh (nhấp đúp = về vị trí gốc)' onPointerDown={e => startDrag(e, i, k)} onDoubleClick={e => { e.stopPropagation(); setSlot(i, k, { dx: 0, dy: 0 }); }}>✥</button>
+                    <button className='drgbtn' title='Kéo để di chuyển hoặc kéo sang trang khác (nhấp đúp = về vị trí gốc)' onPointerDown={e => startDrag(e, i, k)} onDoubleClick={e => { e.stopPropagation(); setSlot(i, k, { dx: 0, dy: 0 }); }}>✥</button>
                     <button title='Kéo dãn bề ngang (+10%)' onClick={() => setSlot(i, k, { sw: clampSz(sw + 0.1) })}>↔+</button>
                     <button title='Thu hẹp bề ngang (-10%)' onClick={() => setSlot(i, k, { sw: clampSz(sw - 0.1) })}>↔-</button>
                     <button title='Kéo dãn bề dọc (+10%)' onClick={() => setSlot(i, k, { sh: clampSz(sh + 0.1) })}>↕+</button>
@@ -1295,6 +1480,11 @@ export default function Book(){
                     <button title='Chữ chú thích to hơn (+10%)' onClick={() => setCapSz(i, k, +0.1)}>aA+</button>
                     {s.src ? <button className='dl' title='Xóa ảnh (giữ khung)' onClick={() => { setSlot(i, k, { src: '', rot: 0, zoom: 1 }); toast('Đã xóa ảnh — bấm ↩ Hoàn tác nếu xóa nhầm'); }}>✕</button> : null}
                     <button className='dl' title='Xóa cả khung này' onClick={() => delSlot(i, k)}>🗑</button>
+                  </div>
+                  <div className='g move-group'>
+                    <button title='Chuyển ảnh này sang trang trước' onClick={() => moveSlotStep(i, k, -1)}>◀ Trang</button>
+                    <button title='Chuyển ảnh này sang trang sau' onClick={() => moveSlotStep(i, k, 1)}>Trang ▶</button>
+                    <button title='Chuyển ảnh này tới trang bất kỳ' onClick={() => promptMoveSlot(i, k)}>✈ Tới tr…</button>
                   </div>
                 </div>
               )}
@@ -1455,6 +1645,22 @@ export default function Book(){
   };
   const noteEl=(i:number,p:Page)=>noteOf(p)!==undefined?<div className='pnote' data-ph='Viết văn bản…' {...E(i,'note')}>{noteOf(p)}</div>:null;
 
+  const renderClickableText=(text:string)=>{
+    if(!text)return '';
+    const urlRegex=/(https?:\/\/[^\s]+)/g;
+    const parts=text.split(urlRegex);
+    return parts.map((part,idx)=>{
+      if(urlRegex.test(part)){
+        return (
+          <a key={idx} href={part} target='_blank' rel='noopener noreferrer' style={{color:'#8b5a1b',textDecoration:'underline',wordBreak:'break-all'}} onClick={e=>e.stopPropagation()}>
+            {part}
+          </a>
+        );
+      }
+      return part;
+    });
+  };
+
   const pageBody=(p:Page,i:number)=>{
     const ft=<div className='ft'>{i+1}</div>;
     const doodle=<PageDoodle pageIndex={i} type={p.t} count={p.s?.length}/>;
@@ -1515,7 +1721,7 @@ export default function Book(){
         <>
           <div className='tx'>
             <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' className='txt-title' dataPh='Tiêu đề…'>{p.title}</TxtBox>
-            <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết…'>{txtVal}</TxtBox>
+            <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết…'>{edit?txtVal:renderClickableText(txtVal)}</TxtBox>
           </div>
           {doodle}{noteEl(i,p)}{ft}
         </>
@@ -1639,8 +1845,58 @@ export default function Book(){
         }
         const a=P[2*j],b=P[2*j+1];return(
         <div key={j} className={'leaf'+(f?' flip':'')+(near?' near':'')} style={{zIndex:zIdx,visibility:isVis?'visible':'hidden',pointerEvents:(isLeftActive||isRightActive||isMv)?'auto':'none',transitionDelay:(isMv&&mv.length>1)?Math.min(Math.abs(j-cur)*35,300)+'ms':'0ms'}}>
-          <div className='face front' onClick={faceClick('front')} style={{pointerEvents:isRightActive?'auto':'none'}}>{pageEl(a,2*j,near)}</div>
-          <div className='face back' onClick={faceClick('back')} style={{pointerEvents:isLeftActive?'auto':'none'}}>{pageEl(b,2*j+1,near)}</div>
+          <div
+            className='face front'
+            data-p={2*j}
+            onDragOver={e => { if(edit){ e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drop-target-active'); } }}
+            onDragLeave={e => { e.currentTarget.classList.remove('drop-target-active'); }}
+            onDrop={e => {
+              if(!edit) return;
+              e.preventDefault();
+              e.currentTarget.classList.remove('drop-target-active');
+              document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
+              try {
+                const raw = e.dataTransfer.getData('application/json');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.fromI !== undefined && data.fromK !== undefined) {
+                  const slotEl = (e.target as HTMLElement).closest('[data-slot-k]') as HTMLElement | null;
+                  const targetK = slotEl ? parseInt(slotEl.getAttribute('data-slot-k') || '', 10) : undefined;
+                  moveSlotToPage(data.fromI, data.fromK, 2*j, targetK);
+                }
+              } catch(_) {}
+            }}
+            onClick={faceClick('front')}
+            style={{pointerEvents:isRightActive?'auto':'none'}}
+          >
+            {pageEl(a,2*j,near)}
+          </div>
+          <div
+            className='face back'
+            data-p={2*j+1}
+            onDragOver={e => { if(edit){ e.preventDefault(); e.dataTransfer.dropEffect = 'move'; e.currentTarget.classList.add('drop-target-active'); } }}
+            onDragLeave={e => { e.currentTarget.classList.remove('drop-target-active'); }}
+            onDrop={e => {
+              if(!edit) return;
+              e.preventDefault();
+              e.currentTarget.classList.remove('drop-target-active');
+              document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
+              try {
+                const raw = e.dataTransfer.getData('application/json');
+                if (!raw) return;
+                const data = JSON.parse(raw);
+                if (data.fromI !== undefined && data.fromK !== undefined) {
+                  const slotEl = (e.target as HTMLElement).closest('[data-slot-k]') as HTMLElement | null;
+                  const targetK = slotEl ? parseInt(slotEl.getAttribute('data-slot-k') || '', 10) : undefined;
+                  moveSlotToPage(data.fromI, data.fromK, 2*j+1, targetK);
+                }
+              } catch(_) {}
+            }}
+            onClick={faceClick('back')}
+            style={{pointerEvents:isLeftActive?'auto':'none'}}
+          >
+            {pageEl(b,2*j+1,near)}
+          </div>
         </div>)})}
     </div></div></div>
     <div id='dock' className='glass'>

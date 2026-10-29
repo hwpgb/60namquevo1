@@ -875,7 +875,6 @@ export default function Book(){
       maxWidth:wVal,
       minHeight:hVal,
       position:'relative',
-      fontSize:sz!==1?`calc(${sz} * 1em)`:undefined,
     };
     return (
       <div className={`editable-txt-box ${className}`} style={boxStyle}>
@@ -886,7 +885,7 @@ export default function Book(){
             width:'100%',
             minHeight:hVal?'100%':undefined,
             display:'block',
-            fontSize:'inherit',
+            fontSize:sz!==1?`calc(${sz} * 1em)`:undefined,
             color:'inherit',
             fontStyle:'inherit',
             fontWeight:'inherit',
@@ -1499,7 +1498,7 @@ export default function Book(){
           <div className='open' style={{margin:'auto 0'}}>
             <div className='no'>{lab}</div>
             <TxtBox i={i} field='yrs' label='Niên khóa' className='yrs' dataPh='Niên khóa…'>{openYrs}</TxtBox>
-            <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' dataPh='Tiêu đề…'>{openTitle}</TxtBox>
+            <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' className='txt-title' dataPh='Tiêu đề…'>{openTitle}</TxtBox>
             <TxtBox i={i} field='txt' label='Giới thiệu' className='txt' dataPh='Giới thiệu…'>{openTxt}</TxtBox>
           </div>
           {doodle}{noteEl(i,p)}{ft}
@@ -1515,7 +1514,7 @@ export default function Book(){
       return (
         <>
           <div className='tx'>
-            <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' dataPh='Tiêu đề…'>{p.title}</TxtBox>
+            <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' className='txt-title' dataPh='Tiêu đề…'>{p.title}</TxtBox>
             <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết…'>{txtVal}</TxtBox>
           </div>
           {doodle}{noteEl(i,p)}{ft}

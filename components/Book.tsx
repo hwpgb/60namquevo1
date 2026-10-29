@@ -257,29 +257,10 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 
 const patchPages=(rawPages:Page[]):Page[]=>{
   const defPages=defaultPages();
-  if(!rawPages||!Array.isArray(rawPages)||rawPages.length===0){
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<145){
     return defPages;
   }
   let pages=[...rawPages];
-
-  // If rawPages is the legacy short version (< 140 pages), merge user slots into defPages so newer sections aren't truncated
-  if(pages.length<140){
-    pages=defPages.map((defP,idx)=>{
-      const rawP=pages[idx];
-      if(!rawP)return defP;
-      if(rawP.s&&rawP.s.length>0&&defP.s){
-        const mergedS=defP.s.map((ds,k)=>{
-          const rs=rawP.s?.[k];
-          if(rs&&(rs.src||(rs.cap&&rs.cap!=='Chú thích ký ức…'))){
-            return {...ds,...rs};
-          }
-          return ds;
-        });
-        return {...defP,...rawP,s:mergedS};
-      }
-      return {...defP,...rawP};
-    });
-  }
 
   // Ensure even page count for double spreads
   if(pages.length%2!==0){
@@ -713,7 +694,7 @@ export default function Book(){
       const ls=localStorage.getItem('60nam_book_saved');
       if(ls){
         const local=JSON.parse(ls);
-        if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length%2===0){
+        if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length>=145&&local.pages.length%2===0){
           loadP(patchPages(local.pages));
         }
       }
@@ -721,11 +702,15 @@ export default function Book(){
     if(db)getDoc(doc(db,'book','main')).then(s=>{
       const d:any=s.data();
       if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+        if(d.pages.length<145){
+          loadP(defaultPages());
+          return;
+        }
         try{
           const ls=localStorage.getItem('60nam_book_saved');
           if(ls){
             const local=JSON.parse(ls);
-            if(local&&local.pages&&local.updated>(d.updated||0))return;
+            if(local&&local.pages&&local.pages.length>=145&&local.updated>(d.updated||0))return;
           }
         }catch(_){}
         loadP(patchPages(d.pages));
@@ -1987,7 +1972,12 @@ export default function Book(){
       <ul>{front.map(tocBtn)}</ul>
       {groups.map(g=><div className='grp' key={g.era.i}><ul>{tocBtn(g.era)}</ul><ul className='kids'>{g.kids.map(tocBtn)}</ul>{edit&&<button className='btn sm' onClick={()=>addClass(g.era.i)}>＋ khóa / lớp</button>}</div>)}
       {back.length>0&&<h4>TƯ LIỆU</h4>}
-      <ul>{back.map(tocBtn)}</ul>
+      <ul>
+        {back.map(tocBtn)}
+        {P.findIndex(p=>p.title==='Nguồn Ảnh + video'||p.title?.includes('Team Làm'))>=0&&(
+          <li><button onClick={()=>{goPage(P.findIndex(p=>p.title==='Nguồn Ảnh + video'||p.title?.includes('Team Làm')));setToc(false)}}>Nguồn tư liệu & Ban làm web</button></li>
+        )}
+      </ul>
       {edit&&<div className='add'><button className='btn' onClick={()=>addSection('era')}>＋ Chương mới</button><button className='btn' onClick={()=>addSection('history')}>＋ Lược sử</button><button className='btn' onClick={()=>addSection('principals')}>＋ Hiệu trưởng</button><button className='btn' onClick={()=>addSection('video')}>＋ Video</button></div>}
     </div></div>
     <div id='toast' className={'glass'+(msg?' on':'')}>{msg}</div>

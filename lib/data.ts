@@ -34,12 +34,14 @@ mkTx('Danh hiệu và thành tích','Huân chương Lao động hạng Ba (năm 
 mkTx('Đổi mới và chuyển đổi số (2020–2026)','Nhà trường đẩy mạnh đổi mới phương pháp dạy học và ứng dụng công nghệ; năm học 2025–2026 tham gia triển khai chương trình học Toán thích ứng ứng dụng trí tuệ nhân tạo (AI), dẫn đầu tỉnh về tỷ lệ học sinh học tập trên nền tảng số. Học sinh nhà trường dẫn đầu toàn quốc về số lượng tham gia chiến dịch trực tuyến “Tiếp sức mùa thi 2026”.'),
 mkTx('Hôm nay và mai sau','Trải qua 60 năm xây dựng và phát triển, Trường THPT Quế Võ số 1 đã viết nên một chặng đường đáng tự hào của giáo dục Bắc Ninh. Thành quả hôm nay là kết tinh nỗ lực của nhiều thế hệ cán bộ quản lý, giáo viên, nhân viên và học sinh. Phát huy truyền thống hiếu học của vùng đất Kinh Bắc, nhà trường tiếp tục hướng tới đào tạo những thế hệ học sinh có kiến thức, đạo đức, bản lĩnh và khát vọng cống hiến cho xã hội.')];
 export const PRINCIPALS:[string,string,string][]=[
+['Thầy Nguyễn Pha','1966 – 1981','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/photos/1793289513561-0-LmXKHYJoOA7iccyJHhMLStjxzCYymb.jpg'],
 ['Thầy Trịnh Văn Nhận','1981 – 1987','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/trinh-van-nhan.jpg'],
 ['Thầy Nguyễn Hồng Việt','1987 – 1991','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/nguyen-hong-viet.jpg'],
 ['Thầy Vũ Văn Bách','1991 – 1997','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/vu-van-bach.jpg'],
 ['Thầy Lê Đức Vĩ','1997 – 2006','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/le-duc-vi.jpg'],
 ['Thầy Nguyễn Văn Nhiên','2006 – 2013','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/nguyen-van-nhien.jpg'],
-['Thầy Lê Tiến Dũng','2013 – 2022','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/le-tien-dung.jpg']];
+['Thầy Lê Tiến Dũng','2013 – 2022','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/principals/le-tien-dung.jpg'],
+['Thầy Phan Văn Hiếu','2022 – nay','https://gxq1ht10fih6sw0u.public.blob.vercel-storage.com/photos/1793289506378-0-XykGPDDsoTyjtFrKn0BKdWkOEN5hBA.jpg']];
 
 const mkPrincipals=():Page[]=>[
 {t:'open',kind:'principals',title:'Hiệu trưởng qua các thời kỳ',yrs:'1966 — 2026',txt:'Những người đã giữ ngọn lửa của nhà trường qua từng thời kỳ.'},
@@ -52,8 +54,8 @@ const mkPrincipals=():Page[]=>[
 {t:'pr',s:[
   {src:PRINCIPALS[4][2],cap:`${PRINCIPALS[4][0]} · ${PRINCIPALS[4][1]}`},
   {src:PRINCIPALS[5][2],cap:`${PRINCIPALS[5][0]} · ${PRINCIPALS[5][1]}`},
-  {src:'',cap:'Thầy Phan Văn Hiếu · 2022 – nay'},
-  {src:'',cap:'Họ và tên · Nhiệm kỳ'}
+  {src:PRINCIPALS[6][2],cap:`${PRINCIPALS[6][0]} · ${PRINCIPALS[6][1]}`},
+  {src:PRINCIPALS[7][2],cap:`${PRINCIPALS[7][0]} · ${PRINCIPALS[7][1]}`}
 ]},
 {t:'q',txt:'“Tôn sư trọng đạo — Uống nước nhớ nguồn. Tri ân công lao các thế hệ lãnh đạo nhà trường qua các thời kỳ.”',by:'THẦY TRÒ QUẾ VÕ SỐ 1'}
 ];

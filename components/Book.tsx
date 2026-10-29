@@ -257,10 +257,39 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 
 const patchPages=(rawPages:Page[]):Page[]=>{
   const defPages=defaultPages();
-  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<151){
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length===0){
     return defPages;
   }
-  let pages=rawPages;
+  let pages=[...rawPages];
+
+  // If rawPages is the legacy short version (< 140 pages), merge user slots into defPages so newer sections aren't truncated
+  if(pages.length<140){
+    pages=defPages.map((defP,idx)=>{
+      const rawP=pages[idx];
+      if(!rawP)return defP;
+      if(rawP.s&&rawP.s.length>0&&defP.s){
+        const mergedS=defP.s.map((ds,k)=>{
+          const rs=rawP.s?.[k];
+          if(rs&&(rs.src||(rs.cap&&rs.cap!=='Chú thích ký ức…'))){
+            return {...ds,...rs};
+          }
+          return ds;
+        });
+        return {...defP,...rawP,s:mergedS};
+      }
+      return {...defP,...rawP};
+    });
+  }
+
+  // Ensure even page count for double spreads
+  if(pages.length%2!==0){
+    const last=pages[pages.length-1];
+    if(last&&last.t==='end'){
+      pages.splice(pages.length-1,0,{t:'q',txt:'',by:''});
+    }else{
+      pages.push({t:'end'});
+    }
+  }
 
   return pages.map((p,idx)=>{
     let txt=p.txt;
@@ -574,12 +603,19 @@ async function blobUp(path:string,file:Blob,multipart?:boolean):Promise<string>{
 }
 
 async function toSrc(f:File,k:number):Promise<string>{
-  if(!(auth&&auth.currentUser))return URL.createObjectURL(f);
   const bm=await createImageBitmap(f);const sc=Math.min(1,1400/Math.max(bm.width,bm.height));
   const c=document.createElement('canvas');c.width=Math.round(bm.width*sc);c.height=Math.round(bm.height*sc);
   c.getContext('2d')!.drawImage(bm,0,0,c.width,c.height);
-  const b:Blob=await new Promise(r=>c.toBlob(x=>r(x as Blob),'image/jpeg',0.8));
-  return blobUp(`photos/${Date.now()}-${k}.jpg`,b);
+  try{
+    if(auth&&auth.currentUser){
+      const b:Blob=await new Promise(r=>c.toBlob(x=>r(x as Blob),'image/jpeg',0.82));
+      const url=await blobUp(`photos/${Date.now()}-${k}.jpg`,b);
+      if(url)return url;
+    }
+  }catch(err){
+    console.warn('Vercel blob upload failed, using persistent compressed data URL',err);
+  }
+  return c.toDataURL('image/jpeg',0.8);
 }
 
 function RotImg({src,rot,zoom}:{src:string;rot:number;zoom:number}){
@@ -673,7 +709,28 @@ export default function Book(){
   },[maxCur]);
 
   useEffect(()=>{
-    if(db)getDoc(doc(db,'book','main')).then(s=>{const d:any=s.data();if(d&&d.pages&&d.pages.length%2===0)loadP(patchPages(d.pages))}).catch(()=>{});
+    try{
+      const ls=localStorage.getItem('60nam_book_saved');
+      if(ls){
+        const local=JSON.parse(ls);
+        if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length%2===0){
+          loadP(patchPages(local.pages));
+        }
+      }
+    }catch(_){}
+    if(db)getDoc(doc(db,'book','main')).then(s=>{
+      const d:any=s.data();
+      if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+        try{
+          const ls=localStorage.getItem('60nam_book_saved');
+          if(ls){
+            const local=JSON.parse(ls);
+            if(local&&local.pages&&local.updated>(d.updated||0))return;
+          }
+        }catch(_){}
+        loadP(patchPages(d.pages));
+      }
+    }).catch(()=>{});
     if(auth)return onAuthStateChanged(auth,usr=>{
       if(!usr){setEdit(false);return}
       if(EDITORS.includes((usr.email||'').toLowerCase())){setEdit(true)}else{toast('Tài khoản này chưa được cấp quyền biên tập');signOut(auth!)}
@@ -1191,14 +1248,14 @@ export default function Book(){
       toast('Đang tải ảnh cổng trường…');
       try{
         const src=await toSrc(fs[0],0);
-        setP(P.map((p,idx)=>idx===pick.current.p?{...p,gateImg:src}:p));
+        setP(Pref.current.map((p,idx)=>idx===pick.current.p?{...p,gateImg:src}:p));
         toast('Đã cập nhật ảnh cổng trường — nhớ bấm 💾 Lưu');
       }catch(e:any){toast('Tải ảnh thất bại: '+(e&&e.message?e.message:'lỗi không rõ'))}
       return;
     }
     const targetP=pick.current.p;
     let targetS=pick.current.s;
-    const next=P.map(p=>({...p,s:p.s?p.s.map(x=>({...x})):[]}));
+    const next=Pref.current.map(p=>({...p,s:p.s?p.s.map(x=>({...x})):[]}));
     let pIdx=targetP;
     let sIdx=targetS;
     for(let k=0;k<fs.length;k++){
@@ -1330,22 +1387,42 @@ export default function Book(){
     toast('Đã dọn dẹp các trang trống — nhớ bấm 💾 Lưu!');
   };
   const save=async()=>{
-    if(!db){toast('Chế độ demo: chưa kết nối Firebase nên chưa lưu được');return}
+    const toSave=Pref.current;
+    try{
+      localStorage.setItem('60nam_book_saved',JSON.stringify({pages:toSave,updated:Date.now()}));
+    }catch(_){}
+    if(!db){toast('Đã lưu vào bộ nhớ máy ✓ (Chế độ demo: chưa kết nối Firebase)');return}
     try{
       const ref0=doc(db,'book','main');
       const old=await getDoc(ref0);
       if(old.exists())await setDoc(doc(db,'book','prev'),{...old.data(),backupAt:Date.now()});
-      await setDoc(ref0,{pages:JSON.parse(JSON.stringify(P)),updated:Date.now()});
+      await setDoc(ref0,{pages:JSON.parse(JSON.stringify(toSave)),updated:Date.now()});
       toast('Đã lưu lên hệ thống ✓ (bản trước đó được giữ lại, lấy bằng nút ⟲ Bản lưu trước)');
-    }catch(e){toast('Lưu thất bại — kiểm tra quyền Firestore')}
+    }catch(e){
+      console.error('Lưu lỗi:',e);
+      toast('Lưu thất bại — đã giữ lại trong bộ nhớ máy');
+    }
   };
   const reloadSaved=async()=>{
     if(!confirm('Bỏ mọi chỉnh sửa chưa lưu và quay về bản đã lưu gần nhất?'))return;
+    let localData:any=null;
+    try{
+      const ls=localStorage.getItem('60nam_book_saved');
+      if(ls)localData=JSON.parse(ls);
+    }catch(_){}
     if(db){
       try{
         const s=await getDoc(doc(db,'book','main'));const d:any=s.data();
-        if(d&&d.pages&&d.pages.length%2===0){loadP(patchPages(d.pages));toast('Đã quay về bản đã lưu');return}
-      }catch(e){toast('Không đọc được bản đã lưu');return}
+        if(d&&d.pages&&d.pages.length%2===0){
+          if(localData&&localData.pages&&localData.pages.length%2===0&&localData.updated>(d.updated||0)){
+            loadP(patchPages(localData.pages));toast('Đã quay về bản lưu gần nhất (bộ nhớ máy)');return;
+          }
+          loadP(patchPages(d.pages));toast('Đã quay về bản đã lưu');return;
+        }
+      }catch(e){console.error(e)}
+    }
+    if(localData&&localData.pages&&localData.pages.length%2===0){
+      loadP(patchPages(localData.pages));toast('Đã quay về bản lưu gần nhất');return;
     }
     loadP(defaultPages());toast('Chưa có bản lưu nào — đã đưa về bản mặc định');
   };

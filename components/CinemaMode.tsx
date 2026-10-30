@@ -15,6 +15,7 @@ export interface CinemaSlide {
 interface CinemaModeProps {
   slides: CinemaSlide[];
   initialIdx?: number;
+  initialIndex?: number;
   onClose: () => void;
   onGoPage: (pageIdx: number) => void;
   musicPlaying: boolean;
@@ -27,6 +28,7 @@ interface CinemaModeProps {
 export default function CinemaMode({
   slides,
   initialIdx = 0,
+  initialIndex,
   onClose,
   onGoPage,
   musicPlaying,
@@ -35,19 +37,32 @@ export default function CinemaMode({
   onOpenMusicSettings,
   canEdit
 }: CinemaModeProps) {
+  const effectiveStart = initialIndex !== undefined ? initialIndex : initialIdx;
+  const safeSlides = slides || [];
   const [curIdx, setCurIdx] = useState(
-    Math.max(0, Math.min(slides.length - 1, initialIdx))
+    safeSlides.length > 0 ? Math.max(0, Math.min(safeSlides.length - 1, effectiveStart)) : 0
   );
   const [isPlaying, setIsPlaying] = useState(true);
   const [progress, setProgress] = useState(0);
   const [imgLoaded, setImgLoaded] = useState(false);
   const timerRef = useRef<any>(null);
 
-  const slide = slides[curIdx] || slides[0];
+  if (safeSlides.length === 0) {
+    return (
+      <div id='cinema-overlay'>
+        <button className='cinema-close-btn' onClick={onClose} title='Thoát'>✕</button>
+        <div style={{ color: '#e8dcc4', textAlign: 'center', marginTop: '40vh', fontSize: 16 }}>
+          Đang chuẩn bị kho ảnh kỷ niệm...
+        </div>
+      </div>
+    );
+  }
+
+  const slide = safeSlides[curIdx] || safeSlides[0];
 
   // Auto advance every 10 seconds (100 ticks of 100ms)
   useEffect(() => {
-    if (!isPlaying || slides.length <= 1) {
+    if (!isPlaying || safeSlides.length <= 1) {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
@@ -55,7 +70,7 @@ export default function CinemaMode({
     timerRef.current = setInterval(() => {
       setProgress(prev => {
         if (prev >= 100) {
-          setCurIdx(i => (i + 1) % slides.length);
+          setCurIdx(i => (i + 1) % safeSlides.length);
           return 0;
         }
         return prev + 1; // 1% every 100ms = 10,000ms = 10s
@@ -65,7 +80,7 @@ export default function CinemaMode({
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
     };
-  }, [isPlaying, slides.length]);
+  }, [isPlaying, safeSlides.length]);
 
   // Reset progress and animation trigger on slide change
   useEffect(() => {
@@ -87,16 +102,16 @@ export default function CinemaMode({
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  }, [slides.length]);
+  }, [safeSlides.length]);
 
   const nextSlide = () => {
     setProgress(0);
-    setCurIdx(i => (i + 1) % slides.length);
+    setCurIdx(i => (i + 1) % safeSlides.length);
   };
 
   const prevSlide = () => {
     setProgress(0);
-    setCurIdx(i => (i - 1 + slides.length) % slides.length);
+    setCurIdx(i => (i - 1 + safeSlides.length) % safeSlides.length);
   };
 
   if (!slide) return null;

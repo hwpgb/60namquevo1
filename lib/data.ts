@@ -21,7 +21,7 @@ export function mkSection(kind:Kind,title?:string,yrs?:string,txt?:string):Page[
 if(kind==='era')return [{t:'open',kind,title:title||'Chương mới',yrs:yrs||'20xx — 20xx',txt:txt||'Viết vài dòng mở đầu cho giai đoạn này…'},mkPh()];
 if(kind==='history')return [{t:'open',kind,title:title||'Lược sử nhà trường',yrs:yrs||'1966 — 2026',txt:'Nơi viết lại hành trình nhà trường, từ những ngày đầu thành lập đến hôm nay.'},mkTx('Những ngày đầu','Viết về thời kỳ thành lập, những thầy cô và lớp học đầu tiên…'),mkTx('Những chặng đường','Viết về các cột mốc, thành tích, những thay đổi qua từng giai đoạn…'),mkTx('Hôm nay và mai sau','Viết về ngôi trường hôm nay và niềm tin vào thế hệ tiếp theo…')];
 if(kind==='principals')return [{t:'open',kind,title:title||'Hiệu trưởng qua các thời kỳ',yrs:yrs||'1966 — 2026',txt:'Những người đã giữ ngọn lửa của nhà trường qua từng thời kỳ.'},mkPr(),mkPr(),mkPr()];
-if(kind==='video')return [{t:'open',kind,title:title||'Video kỷ niệm',yrs:yrs||'Những thước phim xưa',txt:'Nơi lưu giữ những đoạn phim thầy trò, lễ hội, buổi diễn… Bấm vào khung để xem.'},mkVd1(),vdText(),mkVd1(),vdText(),blank()];
+if(kind==='video')return [{t:'tx',kind,title:title||'Video kỷ niệm',txt:txt||'Các thước phim tư liệu, phóng sự và video kỷ niệm 60 năm Trường THPT Quế Võ số 1:\n\n• Video kỷ niệm: https://www.youtube.com/\n\n(Bấm Chế độ biên tập để dán link video; bấm trực tiếp vào link để mở xem video)'}];
 return [{t:'open',kind:'class',title:title||'Lớp 9A',yrs:yrs||'Khóa 19xx – 19xx',txt:'Vài dòng về lớp: thầy cô chủ nhiệm, những kỷ niệm đáng nhớ…'},mkPh(),mkPh(),mkPh()];
 }
 const mkHistory=():Page[]=>[
@@ -136,10 +136,7 @@ export const ERA_TRANSITION_QUOTES: [string, string][] = [
   ['“Nửa thế kỷ dựng xây và trưởng thành. Năm mươi mùa phượng nở là bấy nhiêu ân tình, bấy nhiêu thế hệ làm rạng danh quê hương Kinh Bắc.”', 'HÔM NAY VÀ MAI SAU']
 ];
 
-export const NEW_K59_CLASSES: [string, string, string][] = [
-  ['Lớp 11A4', 'Khóa 59 (2024 – 2027)', 'Nhiệt huyết, sáng tạo và những kỷ niệm đáng nhớ của tuổi học trò 11A4.'],
-  ['Lớp 11A11', 'Khóa 59 (2024 – 2027)', 'Nụ cười rạng rỡ, tình bạn trong sáng và hoài bão tuổi trẻ của tập thể 11A11.']
-];
+export const NEW_K59_CLASSES: [string, string, string][] = [];
 
 export function defaultPages():Page[]{
 quoteCounter = 0;
@@ -150,7 +147,7 @@ ERAS.forEach((e,i)=>{
   P.push({t:'open',kind:'era',title:e[1],yrs:e[0],txt:e[2]},{t:'q',txt:qInfo[0],by:qInfo[1]});
   for(const [prefix,title,yrs,n,perPage] of PHOTO_BY_ERA[i])P.push(...photoSection(title,yrs,urls(prefix,n),perPage||2));
   if(i === 5){
-    // Thêm các lớp mới sau 11A1 Khóa 59
+    // Thêm các lớp mới nếu có
     NEW_K59_CLASSES.forEach(([title, yrs, desc]) => {
       P.push(
         {t:'open',kind:'class',title,yrs,txt:desc},
@@ -159,7 +156,12 @@ ERAS.forEach((e,i)=>{
     });
   }
 });
-P.push({t:'open',kind:'video',title:'Video kỷ niệm',yrs:'Những thước phim xưa',txt:'Nơi lưu giữ những đoạn phim thầy trò, lễ hội, buổi diễn… Bấm vào khung để xem.'},mkVd1(),vdText(),mkVd1(),vdText(),mkVd1(),vdText());
+P.push({
+  t: 'tx',
+  kind: 'video',
+  title: 'Video kỷ niệm',
+  txt: 'Các thước phim tư liệu, phóng sự và video kỷ niệm 60 năm Trường THPT Quế Võ số 1:\n\n• Video kỷ niệm: https://www.youtube.com/\n\n(Bấm Chế độ biên tập để dán link video; bấm trực tiếp vào link để mở xem video)'
+});
 P.push(
   {
     t: 'tx',

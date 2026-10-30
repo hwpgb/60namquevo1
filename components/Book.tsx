@@ -257,10 +257,50 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
 
 const patchPages=(rawPages:Page[]):Page[]=>{
   const defPages=defaultPages();
-  if(!rawPages||!Array.isArray(rawPages)||rawPages.length<145){
+  if(!rawPages||!Array.isArray(rawPages)||rawPages.length===0){
     return defPages;
   }
-  let pages=[...rawPages];
+
+  // 1. Loại bỏ 11A4, 11A11 và các khung upload video cũ (vd, vd1, Tên video, hoặc open video cũ)
+  let filtered: Page[] = [];
+  let skipNextPh = false;
+  for (let i = 0; i < rawPages.length; i++) {
+    const p = rawPages[i];
+    if (p.t === 'open' && (p.title?.includes('11A4') || p.title?.includes('11A11'))) {
+      skipNextPh = true;
+      continue;
+    }
+    if (skipNextPh && p.t === 'ph') {
+      skipNextPh = false;
+      continue;
+    }
+    skipNextPh = false;
+    if (p.t === 'vd' || p.t === 'vd1' || (p.t === 'tx' && p.title === 'Tên video') || (p.t === 'open' && p.kind === 'video')) {
+      continue;
+    }
+    filtered.push(p);
+  }
+
+  let pages = filtered;
+
+  // Nếu số trang ít hơn defPages, ghép các chỉnh sửa của người dùng vào defPages
+  if(pages.length < defPages.length){
+    pages = defPages.map((defP, idx) => {
+      const rawP = pages[idx];
+      if (!rawP) return defP;
+      if (rawP.s && rawP.s.length > 0 && defP.s) {
+        const mergedS = defP.s.map((ds, k) => {
+          const rs = rawP.s?.[k];
+          if (rs && (rs.src || (rs.cap && rs.cap !== 'Chú thích ký ức…'))) {
+            return { ...ds, ...rs };
+          }
+          return ds;
+        });
+        return { ...defP, ...rawP, s: mergedS };
+      }
+      return { ...defP, ...rawP };
+    });
+  }
 
   // Ensure even page count for double spreads
   if(pages.length%2!==0){
@@ -694,7 +734,7 @@ export default function Book(){
       const ls=localStorage.getItem('60nam_book_saved');
       if(ls){
         const local=JSON.parse(ls);
-        if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length>=145&&local.pages.length%2===0){
+        if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length%2===0){
           loadP(patchPages(local.pages));
         }
       }
@@ -702,15 +742,11 @@ export default function Book(){
     if(db)getDoc(doc(db,'book','main')).then(s=>{
       const d:any=s.data();
       if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
-        if(d.pages.length<145){
-          loadP(defaultPages());
-          return;
-        }
         try{
           const ls=localStorage.getItem('60nam_book_saved');
           if(ls){
             const local=JSON.parse(ls);
-            if(local&&local.pages&&local.pages.length>=145&&local.updated>(d.updated||0))return;
+            if(local&&local.pages&&local.updated>(d.updated||0))return;
           }
         }catch(_){}
         loadP(patchPages(d.pages));
@@ -1697,6 +1733,17 @@ export default function Book(){
         <button onClick={act(()=>addAfter(i,'tx'))}>＋ Thêm 1 trang chữ sau trang này</button>
         <button onClick={act(()=>addAfter(i,'ph'))}>＋ Thêm 1 trang ảnh sau trang này</button>
         <button onClick={act(()=>addAfter(i,'vd'))}>＋ Thêm 1 trang video sau trang này</button>
+        {(p.kind==='video'||p.title?.toLowerCase().includes('video'))&&(
+          <button onClick={act(()=>{
+            const val=prompt('Nhập hoặc dán link video (YouTube, Drive, Facebook, v.v.):');
+            if(val&&val.trim()){
+              const curTxt=p.txt||'';
+              const newTxt=curTxt?`${curTxt}\n\n• Video: ${val.trim()}`:`• Video: ${val.trim()}`;
+              setF(i,'txt',newTxt);
+              toast('Đã thêm link video — nhớ bấm 💾 Lưu');
+            }
+          })}>🔗 Thêm link video (YouTube/Drive)</button>
+        )}
         {noteOf(p)===undefined?<button onClick={act(()=>setNote(i,''))}>＋ Thêm khung văn bản</button>:<button className='dl' onClick={act(()=>setNote(i,undefined))}>🗑 Xóa khung văn bản</button>}
         {hasTitle&&<button className='dl' onClick={act(()=>clearTitle(i))}>🗑 Xóa tiêu đề</button>}
         {hasSlots&&<button className='dl' onClick={act(()=>clearCaps(i))}>🗑 Xóa chú thích các ảnh</button>}
@@ -1713,10 +1760,31 @@ export default function Book(){
     const parts=text.split(urlRegex);
     return parts.map((part,idx)=>{
       if(urlRegex.test(part)){
+        let cleanUrl = part.trim();
+        while (cleanUrl && (cleanUrl.endsWith('.') || cleanUrl.endsWith(',') || cleanUrl.endsWith(';') || cleanUrl.endsWith(')'))) {
+          cleanUrl = cleanUrl.slice(0, -1);
+        }
+        let ytId = '';
+        if (cleanUrl.includes('youtube.com') || cleanUrl.includes('youtu.be')) {
+          const m = cleanUrl.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
+          if (m) ytId = m[1];
+        }
         return (
-          <a key={idx} href={part} target='_blank' rel='noopener noreferrer' style={{color:'#8b5a1b',textDecoration:'underline',wordBreak:'break-all'}} onClick={e=>e.stopPropagation()}>
-            {part}
-          </a>
+          <span key={idx} style={{display:'inline-flex',alignItems:'center',gap:6,flexWrap:'wrap',margin:'2px 0'}}>
+            <a href={cleanUrl} target='_blank' rel='noopener noreferrer' style={{color:'#8b5a1b',textDecoration:'underline',wordBreak:'break-all',fontWeight:600}} onClick={e=>e.stopPropagation()}>
+              {cleanUrl}
+            </a>
+            {ytId&&(
+              <button
+                type='button'
+                onClick={e=>{e.stopPropagation();setLb({src:ytId,cap:'Video kỷ niệm',v:'yt'});}}
+                style={{background:'#c0392b',color:'#fff',border:'none',borderRadius:12,padding:'2px 10px',fontSize:12,cursor:'pointer',display:'inline-flex',alignItems:'center',gap:4,lineHeight:'18px',boxShadow:'0 1px 3px rgba(0,0,0,0.2)'}}
+                title='Bấm để xem video trực tiếp'
+              >
+                ▶ Xem video
+              </button>
+            )}
+          </span>
         );
       }
       return part;
@@ -1779,11 +1847,13 @@ export default function Book(){
     if(p.t==='vd1')return <>{vdBig(p,i)}{noteEl(i,p)}{ft}</>;
     if(p.t==='tx'){
       const txtVal=(p.txt!==undefined&&p.txt!=='')?p.txt:(getHistoryFallback(p.title,i)||'');
+      const isVideo=p.kind==='video'||p.title?.toLowerCase().includes('video');
       return (
         <>
           <div className='tx'>
+            {isVideo&&<div style={{fontSize:12,fontWeight:700,letterSpacing:2,color:'#8b5a1b',opacity:0.8,marginBottom:4}}>TƯ LIỆU HÌNH ẢNH & PHÓNG SỰ</div>}
             <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' className='txt-title' dataPh='Tiêu đề…'>{p.title}</TxtBox>
-            <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết…'>{edit?txtVal:renderClickableText(txtVal)}</TxtBox>
+            <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết / Dán link video…'>{edit?txtVal:renderClickableText(txtVal)}</TxtBox>
           </div>
           {doodle}{noteEl(i,p)}{ft}
         </>
@@ -1811,7 +1881,7 @@ export default function Book(){
     return <>{pageBody(p,i)}{tools(i,p)}</>;
   };
 
-  const secs:Item[]=P.map((p,i)=>({p,i})).filter(x=>x.p.t==='open');
+  const secs:Item[]=P.map((p,i)=>({p,i})).filter(x=>x.p.t==='open'||x.p.kind==='video');
   const front:Item[]=[],back:Item[]=[],groups:{era:Item;kids:Item[]}[]=[];
   for(const x of secs){const kd=x.p.kind;if(kd==='era')groups.push({era:x,kids:[]});else if(kd==='class'&&groups.length)groups[groups.length-1].kids.push(x);else if(groups.length)back.push(x);else front.push(x)}
   const lim=Math.min(2*cur,P.length-1);

@@ -22,6 +22,7 @@ interface CinemaModeProps {
   onToggleMusic: () => void;
   bgMusicTitle?: string;
   onOpenMusicSettings?: () => void;
+  onOpenPlaylist?: () => void;
   canEdit?: boolean;
 }
 
@@ -35,6 +36,7 @@ export default function CinemaMode({
   onToggleMusic,
   bgMusicTitle,
   onOpenMusicSettings,
+  onOpenPlaylist,
   canEdit
 }: CinemaModeProps) {
   const effectiveStart = initialIndex !== undefined ? initialIndex : initialIdx;
@@ -60,7 +62,7 @@ export default function CinemaMode({
 
   const slide = safeSlides[curIdx] || safeSlides[0];
 
-  // Auto advance every 10 seconds (100 ticks of 100ms)
+  // Auto advance every 5 seconds (100 ticks of 50ms = 5000ms = 5s)
   useEffect(() => {
     if (!isPlaying || safeSlides.length <= 1) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -73,9 +75,9 @@ export default function CinemaMode({
           setCurIdx(i => (i + 1) % safeSlides.length);
           return 0;
         }
-        return prev + 1; // 1% every 100ms = 10,000ms = 10s
+        return prev + 1; // 1% every 50ms = 5,000ms = 5s
       });
-    }, 100);
+    }, 50);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -305,7 +307,7 @@ export default function CinemaMode({
           object-fit: contain;
           border-radius: 4px;
           display: block;
-          transition: transform 10s ease-out;
+          transition: transform 5s ease-out;
         }
         .cinema-img.kenburns {
           transform: scale(1.045);
@@ -429,11 +431,22 @@ export default function CinemaMode({
             type="button"
             className={`cinema-music-btn ${musicPlaying ? 'playing' : ''}`}
             onClick={onToggleMusic}
-            title={musicPlaying ? 'Tắt nhạc nền' : 'Bật nhạc nền'}
+            title={musicPlaying ? 'Tắt / Bật tiếng nhạc' : 'Bật nhạc nền'}
           >
             <span>{musicPlaying ? '🎵' : '🔇'}</span>
             <span>{musicPlaying ? (bgMusicTitle || 'Đang phát nhạc') : 'Bật nhạc'}</span>
           </button>
+          {onOpenPlaylist && (
+            <button
+              type="button"
+              className="cinema-music-btn"
+              onClick={onOpenPlaylist}
+              title="Chọn bài hát từ Tuyển Tập Nhạc Mái Trường"
+              style={{ padding: '5px 12px', background: 'rgba(201,164,92,0.18)', borderColor: '#c9a45c', color: '#f7ecd5' }}
+            >
+              📜 Tuyển tập nhạc
+            </button>
+          )}
           {canEdit && onOpenMusicSettings && (
             <button
               type="button"
@@ -446,7 +459,7 @@ export default function CinemaMode({
             </button>
           )}
           <div className="cinema-counter">
-            {curIdx + 1} / {slides.length}
+            {curIdx + 1} / {safeSlides.length}
           </div>
           <button
             type="button"
@@ -459,7 +472,7 @@ export default function CinemaMode({
         </div>
       </div>
 
-      {/* 10s Countdown Progress Line */}
+      {/* 5s Countdown Progress Line */}
       <div className="cinema-progress-line">
         <div
           className="cinema-progress-bar"
@@ -508,7 +521,7 @@ export default function CinemaMode({
             type="button"
             className="cinema-ctrl-btn play-btn"
             onClick={() => setIsPlaying(!isPlaying)}
-            title={isPlaying ? 'Tạm dừng tự động (mỗi 10s)' : 'Tiếp tục tự động trình chiếu'}
+            title={isPlaying ? 'Tạm dừng tự động (mỗi 5s)' : 'Tiếp tục tự động trình chiếu'}
           >
             {isPlaying ? '⏸' : '▶'}
           </button>

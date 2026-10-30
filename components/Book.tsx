@@ -124,6 +124,8 @@ html.narrow #music-widget{left:76px;top:8px}
 .music-btn:hover{background:rgba(65,40,15,.95);border-color:#f6e7bd;transform:scale(1.04)}
 .music-btn.playing{border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,.35)}
 .music-btn .music-icon{font-size:13px}
+.music-playlist-btn{all:unset;cursor:pointer;background:rgba(30,18,6,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
+.music-playlist-btn:hover{background:rgba(55,32,10,.95);border-color:#f6e7bd;transform:scale(1.04);color:#fff}
 .music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
 .music-edit-btn:hover{background:rgba(70,45,15,.9);color:#fff;border-color:#f6e7bd}
 #mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
@@ -153,6 +155,109 @@ html.narrow .choice-grid{grid-template-columns:1fr;gap:10px}
 `;
 type LB={src:string;cap:string;v?:string;rot?:number};
 type Item={p:Page;i:number};
+
+export interface PlaylistItem {
+  id: string;
+  title: string;
+  artist: string;
+  duration: string;
+  genre: string;
+  mood: string;
+  url: string;
+}
+
+export const PLAYLIST_MAI_TRUONG: PlaylistItem[] = [
+  {
+    id: 'S_CHQol_DQw',
+    title: 'Mong Ước Kỷ Niệm Xưa',
+    artist: 'Xuân Phương',
+    duration: '05:12',
+    genre: 'Pop / Ballad',
+    mood: 'Hoài niệm, Nghẹn ngào',
+    url: 'https://www.youtube.com/watch?v=S_CHQol_DQw'
+  },
+  {
+    id: 'm3QRAOLIecU',
+    title: 'Người Thầy',
+    artist: 'Nguyễn Nhất Huy',
+    duration: '04:45',
+    genre: 'Trữ tình',
+    mood: 'Tri ân, Sâu lắng',
+    url: 'https://www.youtube.com/watch?v=m3QRAOLIecU'
+  },
+  {
+    id: 'zCl9mV16WUQ',
+    title: 'Hành Lang Cũ',
+    artist: 'Trịnh Đình Quang',
+    duration: '04:20',
+    genre: 'Pop / Ballad',
+    mood: 'Trầm buồn, Tiếc nuối',
+    url: 'https://www.youtube.com/watch?v=zCl9mV16WUQ'
+  },
+  {
+    id: 'ECuGvoEYmsU',
+    title: 'Năm Tháng Ấy',
+    artist: 'Vũ',
+    duration: '04:15',
+    genre: 'Indie / Pop',
+    mood: 'Nhẹ nhàng, Tiếc nuối',
+    url: 'https://www.youtube.com/watch?v=ECuGvoEYmsU'
+  },
+  {
+    id: 'JfnvTtmjGDQ',
+    title: 'Tình Thơ',
+    artist: 'Hoài An',
+    duration: '04:35',
+    genre: 'Pop',
+    mood: 'Luyến lưu, Sôi động nhẹ',
+    url: 'https://www.youtube.com/watch?v=JfnvTtmjGDQ'
+  },
+  {
+    id: '4Vgxu4CkCeU',
+    title: 'Kỷ Niệm Trường Xưa',
+    artist: 'Thanh Phương',
+    duration: '04:08',
+    genre: 'Pop',
+    mood: 'Nhẹ nhàng, Gợi nhớ',
+    url: 'https://www.youtube.com/watch?v=4Vgxu4CkCeU'
+  },
+  {
+    id: 'UxZthqcHB0o',
+    title: 'Thứ Ba Học Trò',
+    artist: 'Nguyễn Đức Trung',
+    duration: '03:45',
+    genre: 'Pop / Vui tươi',
+    mood: 'Vui vẻ, Nghịch ngợm',
+    url: 'https://www.youtube.com/watch?v=UxZthqcHB0o'
+  },
+  {
+    id: 'Smvsy3dfizI',
+    title: 'Bụi Phấn',
+    artist: 'Vũ Hoàng',
+    duration: '02:30',
+    genre: 'Thiếu nhi / Truyền thống',
+    mood: 'Thiêng liêng, Thành kính',
+    url: 'https://www.youtube.com/watch?v=Smvsy3dfizI'
+  },
+  {
+    id: '7ajECaMrLCM',
+    title: 'Xe Đạp',
+    artist: 'M4U ft. Thùy Chi',
+    duration: '04:55',
+    genre: 'Pop / Ballad',
+    mood: 'Trong sáng, Lãng mạn',
+    url: 'https://www.youtube.com/watch?v=7ajECaMrLCM'
+  },
+  {
+    id: 'u2Ix73ePWDs',
+    title: 'Ngây Ngô',
+    artist: 'Dương Trần Nghĩa (Thùy Chi thể hiện)',
+    duration: '04:10',
+    genre: 'Pop / Ballad',
+    mood: 'Trong trẻo, Chớm nở',
+    url: 'https://www.youtube.com/watch?v=u2Ix73ePWDs'
+  }
+];
 const ROMAN=['','I','II','III','IV','V','VI','VII','VIII','IX','X','XI','XII','XIII','XIV','XV'];
 const roman=(n:number)=>ROMAN[n]||String(n);
 const noteOf=(p:Page):string|undefined=>(p as any).note;
@@ -768,15 +873,40 @@ export default function Book(){
   const [cinema, setCinema] = useState(false);
   const [cinemaStartIdx, setCinemaStartIdx] = useState(0);
   const [bgMusic, setBgMusic] = useState<{ url: string; videoId: string; title?: string }>({
-    url: 'https://www.youtube.com/watch?v=wVzO0Yy0-tY',
-    videoId: 'wVzO0Yy0-tY',
-    title: 'Nhạc không lời kỷ niệm'
+    url: PLAYLIST_MAI_TRUONG[0].url,
+    videoId: PLAYLIST_MAI_TRUONG[0].id,
+    title: `${PLAYLIST_MAI_TRUONG[0].title} · ${PLAYLIST_MAI_TRUONG[0].artist}`
   });
   const [musicPlaying, setMusicPlaying] = useState(true);
   const [musicModal, setMusicModal] = useState(false);
+  const [playlistModal, setPlaylistModal] = useState(false);
   const [newMusicUrl, setNewMusicUrl] = useState('');
   const [newMusicTitle, setNewMusicTitle] = useState('');
   const musicStarted = useRef(false);
+
+  const playTrack = async (t: PlaylistItem) => {
+    tryStartMusic();
+    const updated = {
+      url: t.url,
+      videoId: t.id,
+      title: `${t.title} · ${t.artist}`
+    };
+    setBgMusic(updated);
+    setMusicPlaying(true);
+    setTimeout(() => sendYtAudio('playVideo'), 250);
+    try {
+      const ls = localStorage.getItem('60nam_book_saved');
+      let data = ls ? JSON.parse(ls) : {};
+      data.bgMusic = updated;
+      data.updated = Date.now();
+      localStorage.setItem('60nam_book_saved', JSON.stringify(data));
+      if (db && edit) {
+        await setDoc(doc(db, 'book', 'main'), { bgMusic: updated }, { merge: true });
+      }
+    } catch (_) {}
+    toast(`🎵 Đang phát: ${t.title} (${t.artist})`);
+    setPlaylistModal(false);
+  };
 
   const sendYtAudio = (func: string, args: any[] = []) => {
     try {
@@ -2054,7 +2184,7 @@ export default function Book(){
               <div className='choice-card cinema-pick' onClick={() => { tryStartMusic(); startCinema(14); }}>
                 <div className='choice-card-icon'>🎬</div>
                 <div className='choice-card-title'>Chế độ xem phim</div>
-                <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 10 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
+                <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 5 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
                 <button type='button' className='choice-btn cinema'>Bật xem phim ✦</button>
               </div>
             </div>
@@ -2183,6 +2313,14 @@ export default function Book(){
       >
         <span className='music-icon'>{musicPlaying ? '🎵' : '🔇'}</span>
         <span className='music-label'>{musicPlaying ? (bgMusic.title || 'Nhạc nền') : 'Bật nhạc'}</span>
+      </button>
+      <button
+        type='button'
+        className='music-playlist-btn'
+        onClick={() => setPlaylistModal(true)}
+        title='Xem & chọn bài hát trong Tuyển Tập Nhạc Mái Trường'
+      >
+        📜 Tuyển tập ({PLAYLIST_MAI_TRUONG.length})
       </button>
       {edit && (
         <button
@@ -2319,7 +2457,7 @@ export default function Book(){
           if (cinema) setCinema(false);
           else startCinema(2 * cur - 1);
         }}
-        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 10s)'}
+        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 5s)'}
       >
         {cinema ? '📖 Xem lật trang' : '🎬 Chế độ xem phim'}
       </button>
@@ -2371,7 +2509,113 @@ export default function Book(){
         }}
         musicPlaying={musicPlaying}
         onToggleMusic={toggleMusic}
+        bgMusicTitle={bgMusic.title}
+        onOpenPlaylist={() => setPlaylistModal(true)}
+        canEdit={edit}
+        onOpenMusicSettings={() => {
+          setNewMusicUrl(bgMusic.url || '');
+          setNewMusicTitle(bgMusic.title || '');
+          setMusicModal(true);
+        }}
       />
+    )}
+    {playlistModal && (
+      <div id='modal' className='on' onClick={() => setPlaylistModal(false)} style={{ zIndex: 140 }}>
+        <div
+          className='playlist-container glass'
+          onClick={e => e.stopPropagation()}
+          style={{
+            maxWidth: 520,
+            width: '92vw',
+            maxHeight: '85vh',
+            display: 'flex',
+            flexDirection: 'column',
+            padding: '20px 22px',
+            borderRadius: 16,
+            background: 'rgba(18, 14, 10, 0.95)',
+            border: '1px solid rgba(201, 164, 92, 0.4)',
+            boxShadow: '0 16px 45px rgba(0, 0, 0, 0.85)',
+            color: '#fff'
+          }}
+        >
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(201,164,92,0.25)', paddingBottom: 12, marginBottom: 12 }}>
+            <div>
+              <h3 style={{ margin: 0, color: '#e5b96a', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
+                <span>🏫</span> Tuyển Tập Nhạc Mái Trường
+              </h3>
+              <p style={{ margin: '4px 0 0', fontSize: 12, color: '#a89a8a' }}>
+                Chọn ca khúc để thưởng thức cùng trang sách kỷ niệm
+              </p>
+            </div>
+            <button
+              type='button'
+              className='btn sm'
+              onClick={() => setPlaylistModal(false)}
+              style={{ padding: '4px 10px', fontSize: 14 }}
+            >
+              ✕
+            </button>
+          </div>
+
+          <ul className='playlist-list' style={{ listStyle: 'none', padding: 0, margin: 0, overflowY: 'auto', flex: 1, paddingRight: 4 }}>
+            {PLAYLIST_MAI_TRUONG.map((t, idx) => {
+              const isCurrent = bgMusic.videoId === t.id || bgMusic.url.includes(t.id);
+              return (
+                <li
+                  key={t.id}
+                  className={'playlist-item' + (isCurrent ? ' active' : '')}
+                  onClick={() => playTrack(t)}
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    padding: '10px 12px',
+                    borderRadius: 8,
+                    marginBottom: 6,
+                    cursor: 'pointer',
+                    background: isCurrent ? 'rgba(201, 164, 92, 0.22)' : 'rgba(255, 255, 255, 0.04)',
+                    border: isCurrent ? '1px solid #c9a45c' : '1px solid transparent',
+                    transition: 'all 0.2s ease'
+                  }}
+                >
+                  <span className='track-number' style={{ width: 32, color: isCurrent ? '#ffd700' : '#c9a45c', fontWeight: 700, fontSize: 13 }}>
+                    {isCurrent && musicPlaying ? '🔊' : String(idx + 1).padStart(2, '0')}
+                  </span>
+                  <div className='track-info' style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
+                    <span className='track-title' style={{ fontWeight: 600, fontSize: 14, color: isCurrent ? '#ffe7ad' : '#f7ecd5' }}>
+                      {t.title}
+                    </span>
+                    <span className='track-artist' style={{ fontSize: 12, color: '#b0a395', marginTop: 2 }}>
+                      {t.artist} · <span style={{ opacity: 0.75 }}>{t.mood}</span>
+                    </span>
+                  </div>
+                  <span className='track-duration' style={{ fontSize: 12, color: '#a89a8a', marginLeft: 10 }}>
+                    {t.duration}
+                  </span>
+                </li>
+              );
+            })}
+          </ul>
+
+          <div style={{ marginTop: 14, paddingTop: 10, borderTop: '1px solid rgba(255,255,255,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', fontSize: 12, color: '#b0a395' }}>
+            <span>{musicPlaying ? `Đang phát: ${bgMusic.title}` : 'Đang tạm dừng'}</span>
+            {edit && (
+              <button
+                type='button'
+                className='btn sm'
+                onClick={() => {
+                  setPlaylistModal(false);
+                  setNewMusicUrl(bgMusic.url);
+                  setNewMusicTitle(bgMusic.title || '');
+                  setMusicModal(true);
+                }}
+                style={{ fontSize: 11 }}
+              >
+                ⚙ Tùy chỉnh link riêng
+              </button>
+            )}
+          </div>
+        </div>
+      </div>
     )}
     {musicModal && (
       <div id='modal' className='on' onClick={() => setMusicModal(false)}>

@@ -1112,6 +1112,9 @@ export default function Book(){
       const params = new URLSearchParams(window.location.search);
       const p = params.get('p');
       const cin = params.get('cinema') || params.get('movie');
+      if (params.get('playlist')) {
+        setPlaylistModal(true);
+      }
       if (cin) {
         setIntro(false);
         const pg = p ? parseInt(p, 10) : 1;

@@ -281,6 +281,52 @@ const patchPages=(rawPages:Page[]):Page[]=>{
     filtered.push(p);
   }
 
+  // 2. Xóa các trang dư thừa sau phần kết (như trang 143-144 là ph và end dư thừa sau Team Làm)
+  for (let i = 0; i < filtered.length - 1; i++) {
+    if (filtered[i].title === 'Team Làm : Web Dự Phòng') {
+      const afterCredits = filtered.slice(i + 1);
+      const endIdxInAfter = afterCredits.findIndex(q => q.t === 'end');
+      if (endIdxInAfter !== -1) {
+        filtered = filtered.slice(0, i + 1 + endIdxInAfter + 1);
+      }
+      break;
+    }
+  }
+
+  // 3. Xóa các trang 110-117 nếu lớp 11A1 vẫn còn đủ 15 trang ảnh cũ
+  for (let i = 0; i < filtered.length; i++) {
+    if (filtered[i].t === 'open' && filtered[i].title?.includes('11A1')) {
+      let phCount = 0;
+      let j = i + 1;
+      while (j < filtered.length && filtered[j].t === 'ph') {
+        phCount++;
+        j++;
+      }
+      if (phCount >= 15) {
+        filtered.splice(i + 1 + 7, 8);
+      }
+      break;
+    }
+  }
+
+  // 4. Chuẩn hóa trang tri ân, xóa kind='video' để không hiện nhầm breadcrumb video
+  for (let i = 0; i < filtered.length; i++) {
+    const p = filtered[i];
+    if (p.title === 'Nguồn Ảnh + video' || p.title === 'Team Làm : Web Dự Phòng') {
+      delete p.kind;
+    }
+    if (p.t === 'q' && p.title === 'Tiêu đề' && (!p.txt || p.txt.includes('Viết nội dung'))) {
+      p.title = '';
+      p.txt = '“Sáu mươi năm — một chặng đường vinh quang. Dù ở bất cứ nơi đâu, chỉ cần ngoảnh lại, Quế Võ số 1 vẫn luôn là ngôi nhà chan chứa tình thương đón ta trở về.”';
+      p.by = 'HỘI NGỘ & TRI ÂN — 60 NĂM QUẾ VÕ 1';
+    }
+    if (p.t === 'end' && p.txt && p.txt.includes('Trưởng nhóm')) {
+      p.title = 'Chào mừng kỉ niệm 60 năm thành lập trường';
+      p.txt = 'Hành trình vẫn còn dang dở — và chúng ta là những trang tiếp theo.';
+      p.by = '11A1 cùng nhau viết tiếp trang sử';
+    }
+  }
+
   let pages = filtered;
 
   // Nếu số trang ít hơn defPages, ghép các chỉnh sửa của người dùng vào defPages
@@ -306,9 +352,9 @@ const patchPages=(rawPages:Page[]):Page[]=>{
   if(pages.length%2!==0){
     const last=pages[pages.length-1];
     if(last&&last.t==='end'){
-      pages.splice(pages.length-1,0,{t:'q',txt:'',by:''});
+      pages.splice(pages.length-1,0,{t:'q',txt:'“Sáu mươi năm — một chặng đường vinh quang. Dù ở bất cứ nơi đâu, chỉ cần ngoảnh lại, Quế Võ số 1 vẫn luôn là ngôi nhà chan chứa tình thương đón ta trở về.”',by:'HỘI NGỘ & TRI ÂN — 60 NĂM QUẾ VÕ 1'});
     }else{
-      pages.push({t:'end'});
+      pages.push({t:'end',title:'Chào mừng kỉ niệm 60 năm thành lập trường',txt:'Hành trình vẫn còn dang dở — và chúng ta là những trang tiếp theo.',by:'11A1 cùng nhau viết tiếp trang sử'});
     }
   }
 
@@ -1890,6 +1936,7 @@ export default function Book(){
   const eraTxt=(x:Item)=>'CHƯƠNG '+roman(eraNo(x.i));
   let label='';
   if(cur===0)label='BÌA TRƯỚC';else if(cur===maxCur)label='BÌA SAU';else if(cur===N)label='LỜI KẾT';
+  else if(cur===N-1&&P[2*cur-1]?.title?.includes('Nguồn Ảnh'))label='TRI ÂN & BAN BIÊN TẬP';
   else if(curSec){
     const c=curSec as Item;
     const def=DEFAULT_PAGE_MAP[c.i];

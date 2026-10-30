@@ -118,7 +118,7 @@ const PHOTO_BY_ERA: PS[][] = [
   [
     ['c6-ky-niem-50-nam', 'Kỷ niệm 50 năm', '2016', 18, 2],
     ['c6-khoa-2017-2020', 'Khóa 2017 – 2020', '2017 – 2020', 2, 2],
-    ['c6-lop-11a1-khoa-59', 'Lớp 11A1', 'Khóa 59', 60, 4],
+    ['c6-lop-11a1-khoa-59', 'Lớp 11A1', 'Khóa 59', 28, 4],
     ['c6-lop-11a2-khoa-59', 'Lớp 11A2', 'Khóa 59 (2024 – 2027)', 8, 2],
     ['c6-lop-11a6-khoa-59', 'Lớp 11A6', 'Khóa 59 (2024 – 2027)', 8, 2],
     ['c6-lop-11a10-khoa-59', 'Lớp 11A10', 'Khóa 59 (2024 – 2027)', 1, 2],
@@ -157,10 +157,9 @@ ERAS.forEach((e,i)=>{
   }
 });
 P.push({
-  t: 'tx',
-  kind: 'video',
-  title: 'Video kỷ niệm',
-  txt: 'Các thước phim tư liệu, phóng sự và video kỷ niệm 60 năm Trường THPT Quế Võ số 1:\n\n• Video kỷ niệm: https://www.youtube.com/\n\n(Bấm Chế độ biên tập để dán link video; bấm trực tiếp vào link để mở xem video)'
+  t: 'q',
+  txt: '“Sáu mươi năm — một chặng đường vinh quang. Dù ở bất cứ nơi đâu, chỉ cần ngoảnh lại, Quế Võ số 1 vẫn luôn là ngôi nhà chan chứa tình thương đón ta trở về.”',
+  by: 'HỘI NGỘ & TRI ÂN — 60 NĂM QUẾ VÕ 1'
 });
 P.push(
   {
@@ -173,9 +172,13 @@ P.push(
     t: 'tx',
     title: 'Team Làm : Web Dự Phòng',
     txt: 'Trưởng nhóm : Phùng Gia Bảo\nThành Viên : Phương Thành An, Phạm Ngọc Tùng, Trần Ngọc Minh, Nguyễn Hoàng An, Lê Phạm Thúy Ngân, Trần Hải Ninh\nCode chính : Gia Bảo, Ngọc Minh\nTìm, lọc Ảnh: Thành An\nNội dung : Tùng\nVideo : Hoàng An\nThiết kế bìa, font chữ, hoàn thiện và kiểm tra chất lượng: Ninh, Ngân.'
+  },
+  {
+    t: 'end',
+    title: 'Chào mừng kỉ niệm 60 năm thành lập trường',
+    txt: 'Hành trình vẫn còn dang dở — và chúng ta là những trang tiếp theo.',
+    by: '11A1 cùng nhau viết tiếp trang sử'
   }
 );
-if(P.length%2===0)P.push({t:'q',txt:'“Sáu mươi năm — một chặng đường vinh quang. Dù ở bất cứ nơi đâu, chỉ cần ngoảnh lại, Quế Võ số 1 vẫn luôn là ngôi nhà chan chứa tình thương đón ta trở về.”',by:'HỘI NGỘ & TRI ÂN — 60 NĂM QUẾ VÕ 1'});
-P.push({t:'end'});
 return P;
 }

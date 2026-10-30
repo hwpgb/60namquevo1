@@ -7,6 +7,7 @@ import {KIND_LABEL,Kind,Page,Slot,defaultPages,mkPh,mkTx,mkVd,mkVd1,mkSection} f
 import {auth,db} from '../lib/firebase';
 import Fireflies from './Fireflies';
 import GateBg from './GateBg';
+import CinemaMode, { CinemaSlide } from './CinemaMode';
 
 const EDITORS=(process.env.NEXT_PUBLIC_EDITOR_EMAILS||'').toLowerCase().split(',').map(s=>s.trim()).filter(Boolean);
 const FRAME='https://i.postimg.cc/FHy6s9ZS/Phac-hoa-cong-truong-Que-Vo-So-1.png';
@@ -117,6 +118,38 @@ html.narrow #dock button{min-height:44px}
 html.narrow .ph{cursor:pointer}
 .empty-page-add-slot{margin:auto;padding:14px 22px;border:2px dashed rgba(143,95,28,.45);border-radius:12px;background:rgba(255,253,245,.75);color:var(--gold);font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(50,30,10,.08);transition:all .25s}
 .empty-page-add-slot:hover{background:rgba(255,253,245,.98);border-color:var(--gold);transform:scale(1.03)}
+#music-widget{position:fixed;top:12px;left:88px;z-index:45;display:flex;align-items:center;gap:6px}
+html.narrow #music-widget{left:76px;top:8px}
+.music-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
+.music-btn:hover{background:rgba(65,40,15,.95);border-color:#f6e7bd;transform:scale(1.04)}
+.music-btn.playing{border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,.35)}
+.music-btn .music-icon{font-size:13px}
+.music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
+.music-edit-btn:hover{background:rgba(70,45,15,.9);color:#fff;border-color:#f6e7bd}
+#mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+.mode-switch-btn{all:unset;cursor:pointer;background:rgba(35,22,8,.88);backdrop-filter:blur(12px);color:#f6e7bd;border:1px solid rgba(201,164,92,.6);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 10px rgba(201,164,92,.25);transition:all .25s ease;white-space:nowrap}
+.mode-switch-btn:hover{background:rgba(60,38,12,.98);border-color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.55), 0 0 18px rgba(201,164,92,.5);transform:scale(1.05)}
+.mode-switch-btn.cinema-active{background:linear-gradient(135deg, #c9a45c, #8f5f1c);color:#fff;border-color:#fff}
+.choice-page-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:100%;padding:14px 10px;text-align:center}
+.choice-badge{display:inline-block;font-size:10.5px;letter-spacing:2px;font-weight:700;color:#9b6d26;text-transform:uppercase;border:1px solid rgba(155,109,38,.35);padding:3px 12px;border-radius:999px;margin-bottom:8px;background:rgba(215,175,95,.15)}
+.choice-head{font-family:'SVN-Hottroof-Semhesta','Cinzel',serif;font-size:clamp(16px, calc(var(--w) * 0.046), 24px);color:#5a3710;line-height:1.25;margin:0 0 8px;font-weight:700;text-transform:uppercase}
+.choice-sub{font-size:clamp(11px, calc(var(--w) * 0.026), 13.5px);color:#6b4a24;margin:0 0 16px;line-height:1.4;opacity:.9}
+.choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:96%;margin-bottom:14px}
+html.narrow .choice-grid{grid-template-columns:1fr;gap:10px}
+.choice-card{background:linear-gradient(145deg,#fffdf7,#f5ead0);border:1.5px solid rgba(195,155,90,.55);border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 6px 18px rgba(50,30,10,.14);cursor:pointer;transition:all .28s ease}
+.choice-card:hover{transform:translateY(-4px) scale(1.02);border-color:#c9a45c;box-shadow:0 12px 28px rgba(50,30,10,.25), 0 0 15px rgba(201,164,92,.3)}
+.choice-card.cinema-pick{background:linear-gradient(145deg,#2e1e0f,#1c1208);border-color:rgba(226,192,121,.6);color:#f7ecd2}
+.choice-card.cinema-pick:hover{border-color:#f6e7bd;box-shadow:0 12px 28px rgba(0,0,0,.45), 0 0 20px rgba(201,164,92,.5)}
+.choice-card-icon{font-size:28px;margin-bottom:6px;line-height:1}
+.choice-card-title{font-size:14px;font-weight:700;color:#5a3710;margin-bottom:4px}
+.choice-card.cinema-pick .choice-card-title{color:#e8c782}
+.choice-card-desc{font-size:11px;color:#7c5c32;line-height:1.35;margin-bottom:10px;flex:1}
+.choice-card.cinema-pick .choice-card-desc{color:#d5be9b}
+.choice-btn{all:unset;font-size:11.5px;font-weight:700;padding:6px 14px;border-radius:999px;background:#8f5f1c;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:all .2s;white-space:nowrap}
+.choice-card:hover .choice-btn{background:#734b14}
+.choice-btn.cinema{background:radial-gradient(circle,#d4af37,#9d6d24);color:#2b1807;font-weight:800}
+.choice-card.cinema-pick:hover .choice-btn.cinema{background:radial-gradient(circle,#f6e7bd,#c9a45c)}
+.choice-quote-box{margin-top:auto;padding-top:8px;border-top:1px dashed rgba(143,95,28,.35);font:italic 500 12.5px/1.5 'Lora',serif;color:#5c4424;width:94%}
 `;
 type LB={src:string;cap:string;v?:string;rot?:number};
 type Item={p:Page;i:number};
@@ -253,6 +286,14 @@ export function calcKFromYear(yearOrStr: string | number | undefined): number | 
   if (!m) return null;
   const y = parseInt(m[1], 10);
   return y >= 1966 ? (y - 1966) : null;
+}
+
+export function getYoutubeId(urlOrId: string | undefined): string {
+  if (!urlOrId) return '';
+  const trimmed = urlOrId.trim();
+  if (/^[a-zA-Z0-9_-]{11}$/.test(trimmed)) return trimmed;
+  const m = trimmed.match(/(?:v=|youtu\.be\/|embed\/)([\w-]{11})/);
+  return m ? m[1] : '';
 }
 
 const patchPages=(rawPages:Page[]):Page[]=>{
@@ -724,6 +765,130 @@ export default function Book(){
   const [lgReady,setLgReady]=useState(false);
   const [lgAnim,setLgAnim]=useState(false);
   const [logoOk,setLogoOk]=useState(true);
+  const [cinema, setCinema] = useState(false);
+  const [cinemaStartIdx, setCinemaStartIdx] = useState(0);
+  const [bgMusic, setBgMusic] = useState<{ url: string; videoId: string; title?: string }>({
+    url: 'https://www.youtube.com/watch?v=wVzO0Yy0-tY',
+    videoId: 'wVzO0Yy0-tY',
+    title: 'Nhạc không lời kỷ niệm'
+  });
+  const [musicPlaying, setMusicPlaying] = useState(true);
+  const [musicModal, setMusicModal] = useState(false);
+  const [newMusicUrl, setNewMusicUrl] = useState('');
+  const [newMusicTitle, setNewMusicTitle] = useState('');
+  const musicStarted = useRef(false);
+
+  const sendYtAudio = (func: string, args: any[] = []) => {
+    try {
+      const ifr = document.getElementById('yt-bg-audio') as HTMLIFrameElement | null;
+      if (ifr && ifr.contentWindow) {
+        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
+      }
+    } catch (_) {}
+  };
+
+  const tryStartMusic = () => {
+    if (!musicStarted.current) {
+      musicStarted.current = true;
+      sendYtAudio('playVideo');
+    }
+  };
+
+  const toggleMusic = () => {
+    tryStartMusic();
+    if (musicPlaying) {
+      sendYtAudio('pauseVideo');
+      setMusicPlaying(false);
+    } else {
+      sendYtAudio('playVideo');
+      setMusicPlaying(true);
+    }
+  };
+
+  const saveMusicSetting = async () => {
+    const vid = getYoutubeId(newMusicUrl);
+    if (!vid) {
+      toast('Link YouTube không hợp lệ, vui lòng kiểm tra lại');
+      return;
+    }
+    const updatedMusic = {
+      url: newMusicUrl.trim(),
+      videoId: vid,
+      title: newMusicTitle.trim() || 'Nhạc nền YouTube'
+    };
+    setBgMusic(updatedMusic);
+    setMusicModal(false);
+    setMusicPlaying(true);
+    setTimeout(() => sendYtAudio('playVideo'), 300);
+    try {
+      const ls = localStorage.getItem('60nam_book_saved');
+      let data = ls ? JSON.parse(ls) : {};
+      data.bgMusic = updatedMusic;
+      data.updated = Date.now();
+      localStorage.setItem('60nam_book_saved', JSON.stringify(data));
+      if (db) {
+        await setDoc(doc(db, 'book', 'main'), { bgMusic: updatedMusic }, { merge: true });
+        toast('✓ Đã cập nhật và lưu nhạc nền YouTube cho toàn bộ sách');
+      } else {
+        toast('✓ Đã áp dụng nhạc nền trên máy này');
+      }
+    } catch (e) {
+      toast('Đã áp dụng nhạc nền cho phiên xem này');
+    }
+  };
+
+  const collectSlides = (): CinemaSlide[] => {
+    const list: CinemaSlide[] = [];
+    let curEraTitle = '';
+    let curEraYrs = '';
+    let curClassTitle = '';
+    let curClassYrs = '';
+
+    for (let i = 0; i < P.length; i++) {
+      const p = P[i];
+      if (p.t === 'open') {
+        if (p.kind === 'era') {
+          curEraTitle = p.title || '';
+          curEraYrs = p.yrs || '';
+          curClassTitle = '';
+          curClassYrs = '';
+        } else if (p.kind === 'class') {
+          curClassTitle = p.title || '';
+          curClassYrs = p.yrs || '';
+        }
+      }
+      if (p.s && p.s.length > 0) {
+        for (let k = 0; k < p.s.length; k++) {
+          const slot = p.s[k];
+          if (slot.src && slot.src.trim() !== '') {
+            list.push({
+              src: slot.src,
+              cap: slot.cap,
+              pageIdx: i,
+              slotIdx: k,
+              eraTitle: curEraTitle,
+              eraYrs: curEraYrs,
+              classTitle: curClassTitle,
+              classYrs: curClassYrs
+            });
+          }
+        }
+      }
+    }
+    return list;
+  };
+
+  const startCinema = (fromPageIdx?: number) => {
+    tryStartMusic();
+    const allSlides = collectSlides();
+    let targetIdx = 0;
+    if (fromPageIdx !== undefined) {
+      const found = allSlides.findIndex(s => s.pageIdx >= fromPageIdx);
+      if (found !== -1) targetIdx = found;
+    }
+    setCinemaStartIdx(targetIdx);
+    setCinema(true);
+  };
   const fi=useRef<HTMLInputElement>(null);
   const vfi=useRef<HTMLInputElement>(null);
   const tilt=useRef<HTMLDivElement>(null);
@@ -783,19 +948,27 @@ export default function Book(){
         if(local&&local.pages&&Array.isArray(local.pages)&&local.pages.length%2===0){
           loadP(patchPages(local.pages));
         }
+        if(local&&local.bgMusic){
+          setBgMusic(local.bgMusic);
+        }
       }
     }catch(_){}
     if(db)getDoc(doc(db,'book','main')).then(s=>{
       const d:any=s.data();
-      if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
-        try{
-          const ls=localStorage.getItem('60nam_book_saved');
-          if(ls){
-            const local=JSON.parse(ls);
-            if(local&&local.pages&&local.updated>(d.updated||0))return;
-          }
-        }catch(_){}
-        loadP(patchPages(d.pages));
+      if(d){
+        if(d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+          try{
+            const ls=localStorage.getItem('60nam_book_saved');
+            if(ls){
+              const local=JSON.parse(ls);
+              if(local&&local.pages&&local.updated>(d.updated||0))return;
+            }
+          }catch(_){}
+          loadP(patchPages(d.pages));
+        }
+        if(d.bgMusic){
+          setBgMusic(d.bgMusic);
+        }
       }
     }).catch(()=>{});
     if(auth)return onAuthStateChanged(auth,usr=>{
@@ -1456,14 +1629,14 @@ export default function Book(){
   const save=async()=>{
     const toSave=Pref.current;
     try{
-      localStorage.setItem('60nam_book_saved',JSON.stringify({pages:toSave,updated:Date.now()}));
+      localStorage.setItem('60nam_book_saved',JSON.stringify({pages:toSave,bgMusic,updated:Date.now()}));
     }catch(_){}
     if(!db){toast('Đã lưu vào bộ nhớ máy ✓ (Chế độ demo: chưa kết nối Firebase)');return}
     try{
       const ref0=doc(db,'book','main');
       const old=await getDoc(ref0);
       if(old.exists())await setDoc(doc(db,'book','prev'),{...old.data(),backupAt:Date.now()});
-      await setDoc(ref0,{pages:JSON.parse(JSON.stringify(toSave)),updated:Date.now()});
+      await setDoc(ref0,{pages:JSON.parse(JSON.stringify(toSave)),bgMusic,updated:Date.now()});
       toast('Đã lưu lên hệ thống ✓ (bản trước đó được giữ lại, lấy bằng nút ⟲ Bản lưu trước)');
     }catch(e){
       console.error('Lưu lỗi:',e);
@@ -1859,6 +2032,34 @@ export default function Book(){
       const qFb=getQuoteFallback(p,i,P);
       const qTxt=(p.txt!==undefined&&p.txt.trim()!=='')?p.txt:qFb.txt;
       const qBy=(p.by!==undefined&&p.by.trim()!=='')?p.by:qFb.by;
+      if (i === 13) {
+        return (
+          <div className='choice-page-wrap'>
+            <div className='choice-badge'>KHỞI ĐẦU HÀNH TRÌNH</div>
+            <h2 className='choice-head'>BẠN MUỐN TRẢI NGHIỆM CUỐN SÁCH THEO CÁCH NÀO?</h2>
+            <p className='choice-sub'>Khép lại Lược sử & Ban giám hiệu qua các thời kỳ, hãy chọn cách bạn muốn khám phá những thước ảnh ký ức:</p>
+            <div className='choice-grid'>
+              <div className='choice-card' onClick={() => { tryStartMusic(); step(1); }}>
+                <div className='choice-card-icon'>📖</div>
+                <div className='choice-card-title'>Xem từng trang sách</div>
+                <div className='choice-card-desc'>Tự do lật giở từng trang kỷ niệm, ngắm ảnh và đọc trọn vẹn những dòng cảm xúc theo nhịp điệu của bạn.</div>
+                <button type='button' className='choice-btn'>Lật tiếp sang Chương I ›</button>
+              </div>
+              <div className='choice-card cinema-pick' onClick={() => { tryStartMusic(); startCinema(14); }}>
+                <div className='choice-card-icon'>🎬</div>
+                <div className='choice-card-title'>Chế độ xem phim</div>
+                <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 10 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
+                <button type='button' className='choice-btn cinema'>Bật xem phim ✦</button>
+              </div>
+            </div>
+            <div className='choice-quote-box'>
+              <TxtBox i={i} field='txt' label='Trích dẫn' tag='span' dataPh='Trích dẫn…'>{qTxt}</TxtBox>
+              <TxtBox i={i} field='by' label='Tác giả' tag='small' dataPh='Tác giả…'>{qBy}</TxtBox>
+            </div>
+            {doodle}{noteEl(i, p)}{ft}
+          </div>
+        );
+      }
       return (
         <>
           <div className='q'>
@@ -1936,7 +2137,7 @@ export default function Book(){
   const eraTxt=(x:Item)=>'CHƯƠNG '+roman(eraNo(x.i));
   let label='';
   if(cur===0)label='BÌA TRƯỚC';else if(cur===maxCur)label='BÌA SAU';else if(cur===N)label='LỜI KẾT';
-  else if(cur===N-1&&P[2*cur-1]?.title?.includes('Nguồn Ảnh'))label='TRI ÂN & BAN BIÊN TẬP';
+  else if((P[2*cur-1]?.title?.includes('Nguồn Ảnh')||P[2*cur]?.title?.includes('Team Làm')||P[2*cur]?.title?.includes('Nguồn Ảnh')))label='TRI ÂN & BAN BIÊN TẬP';
   else if(curSec){
     const c=curSec as Item;
     const def=DEFAULT_PAGE_MAP[c.i];
@@ -1961,12 +2162,37 @@ export default function Book(){
   };
 
   return (
-  <div className={'root'+(edit?' editing':'')} onPointerMove={onMove} onTouchStart={onTS} onTouchEnd={onTE}>
+  <div className={'root'+(edit?' editing':'')} onPointerMove={onMove} onTouchStart={onTS} onTouchEnd={onTE} onPointerDown={()=>{if(!musicPlaying&&bgMusic.url)tryStartMusic()}}>
     <style>{CSS}</style>
     <div className='school-gate-bg' aria-hidden='true'/>
     <Fireflies/>
     <div id='bar' style={{width:(cur/maxCur*100)+'%'}}/>
     <div id='top' className='glass'>{label}</div>
+    <div id='music-widget'>
+      <button
+        type='button'
+        className={'music-btn' + (musicPlaying ? ' playing' : '')}
+        onClick={toggleMusic}
+        title={musicPlaying ? 'Tắt / Tạm dừng nhạc nền' : 'Bật nhạc nền'}
+      >
+        <span className='music-icon'>{musicPlaying ? '🎵' : '🔇'}</span>
+        <span className='music-label'>{musicPlaying ? (bgMusic.title || 'Nhạc nền') : 'Bật nhạc'}</span>
+      </button>
+      {edit && (
+        <button
+          type='button'
+          className='music-edit-btn'
+          onClick={() => {
+            setNewMusicUrl(bgMusic.url || '');
+            setNewMusicTitle(bgMusic.title || '');
+            setMusicModal(true);
+          }}
+          title='Đổi link YouTube nhạc nền cho website'
+        >
+          ⚙ Đổi nhạc
+        </button>
+      )}
+    </div>
     {edit?<div id='tb' className='glass'><button className='btn' onClick={()=>addAfter(here(),'tx')}>＋ 1 trang</button><button className='btn' onClick={()=>addAfter(here(),'vd')}>＋ 1 video</button><button className='btn' onClick={save}>💾 Lưu</button><button className='btn' onClick={logout}>Đăng xuất</button></div>:<button id='lock' className='glass' title='Đăng nhập biên tập' aria-label='Đăng nhập biên tập' onClick={()=>setModal(true)}>🔒</button>}
     {edit&&<div id='tb2' className='glass'><button className='btn' onClick={undo} disabled={!hn} title='Hoàn tác thao tác vừa làm (Ctrl+Z)'>↩ Hoàn tác</button><button className='btn' onClick={restorePrev} title='Lấy lại bản đã lưu trước lần Lưu gần nhất'>⟲ Bản lưu trước</button><button className='btn' onClick={reloadSaved} title='Bỏ các chỉnh sửa chưa lưu'>↺ Bỏ chưa lưu</button><button className='btn' onClick={toDefault} title='Đưa sách về bản mặc định ban đầu'>⟳ Về mặc định</button></div>}
     <div id='stage'><div id='tilt' ref={tilt}><div id='book' className={(isOpen?'is-open':'')+(isClosedBack?' is-closed-back':'')+(narrow&&half?' is-half':'')} style={{['--k' as any]:k}}>
@@ -2078,6 +2304,20 @@ export default function Book(){
           </div>
         </div>)})}
     </div></div></div>
+    <div id='mode-bar'>
+      <button
+        type='button'
+        className={'mode-switch-btn' + (cinema ? ' cinema-active' : '')}
+        onClick={() => {
+          tryStartMusic();
+          if (cinema) setCinema(false);
+          else startCinema(2 * cur - 1);
+        }}
+        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 10s)'}
+      >
+        {cinema ? '📖 Xem lật trang' : '🎬 Chế độ xem phim'}
+      </button>
+    </div>
     <div id='dock' className='glass'>
       <button onClick={()=>step(-1)} disabled={!canPrev} style={{opacity:canPrev?1:0.3,cursor:canPrev?'pointer':'default'}} title={canPrev?'Trang trước':'Đã ở bìa trước'}>‹</button>
       <button className={toc?'on':''} onClick={()=>setToc(true)}>☰ Mục lục</button>
@@ -2103,6 +2343,55 @@ export default function Book(){
     <div id='modal' className={modal?'on':''}><div className='card glass'><h3>Đăng nhập biên tập</h3><input placeholder='Email / Tài khoản' value={u} onChange={e=>setU(e.target.value)} autoComplete='username'/><input type='password' placeholder='Mật khẩu' value={pw} onChange={e=>setPw(e.target.value)} autoComplete='current-password' onKeyDown={e=>{if(e.key==='Enter')login()}}/><div className='err'>{err}</div><button className='btn go' onClick={login}>Đăng nhập</button><button className='btn' style={{textAlign:'center'}} onClick={()=>setModal(false)}>Đóng</button></div></div>
     <div id='lb' className={lb?'on':''} onClick={()=>setLb(null)}>{lb&&<figure onClick={e=>e.stopPropagation()}>{lb.v==='yt'?<iframe src={`https://www.youtube.com/embed/${lb.src}?autoplay=1&rel=0`} allow='autoplay; encrypted-media; fullscreen' allowFullScreen/>:lb.v==='file'?<video src={lb.src} controls autoPlay playsInline/>:<img src={lb.src} alt={lb.cap} style={lb.rot?{transform:`rotate(${lb.rot}deg)`,...(lb.rot%180!==0?{maxWidth:'78vh',maxHeight:'88vw'}:{})}:undefined}/>}<figcaption>{lb.cap}</figcaption></figure>}</div>
     <div id='logo60' className={lgMode==='corner'?'corner':''} onClick={logoClick} title={lgMode==='corner'?'Về trang bìa':undefined} style={{left:lg.x,top:lg.y,width:lg.s,height:lg.s,opacity:(intro||!lgReady)?0:1,pointerEvents:(lgMode==='corner'&&!intro)?'auto':'none',transition:lgAnim?undefined:'none'}}>{logoOk?<img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false} onError={()=>setLogoOk(false)}/>:<span className='lgtxt'>60</span>}</div>
-    <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{setIntro(false);setTimeout(()=>go(1),500)}}>Mở cuốn sách ký ức</button></div></div>
+    <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{tryStartMusic();setIntro(false);setTimeout(()=>go(1),500)}}>Mở cuốn sách ký ức</button></div></div>
+    {/* Hidden background YouTube audio player */}
+    {bgMusic.url && getYoutubeId(bgMusic.url) && (
+      <iframe
+        id='yt-bg-audio'
+        src={`https://www.youtube.com/embed/${getYoutubeId(bgMusic.url)}?enablejsapi=1&autoplay=1&loop=1&playlist=${getYoutubeId(bgMusic.url)}`}
+        style={{ position: 'fixed', left: -9999, top: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
+        allow='autoplay'
+        title='Background Music'
+      />
+    )}
+    {cinema && (
+      <CinemaMode
+        slides={collectSlides()}
+        initialIndex={cinemaStartIdx}
+        onClose={() => setCinema(false)}
+        onGoPage={(pageIdx) => {
+          setCinema(false);
+          goPage(pageIdx);
+        }}
+        musicPlaying={musicPlaying}
+        onToggleMusic={toggleMusic}
+      />
+    )}
+    {musicModal && (
+      <div id='modal' className='on' onClick={() => setMusicModal(false)}>
+        <div className='card glass' onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
+          <h3 style={{ marginBottom: 12 }}>⚙ Cài đặt nhạc nền</h3>
+          <p style={{ fontSize: 13, color: '#e8dcc4', marginBottom: 14 }}>
+            Dán đường link YouTube (video ca nhạc, nhạc không lời, kỷ niệm...) để phát tự động dưới nền (không hiện video):
+          </p>
+          <input
+            placeholder='Link YouTube (ví dụ: https://youtu.be/...)'
+            value={newMusicUrl}
+            onChange={e => setNewMusicUrl(e.target.value)}
+            style={{ marginBottom: 10 }}
+          />
+          <input
+            placeholder='Tên bài hát / Gợi nhớ (ví dụ: Kỷ Niệm Mái Trường)'
+            value={newMusicTitle}
+            onChange={e => setNewMusicTitle(e.target.value)}
+            style={{ marginBottom: 14 }}
+          />
+          <div style={{ display: 'flex', gap: 8, justifyContent: 'flex-end' }}>
+            <button className='btn' style={{ textAlign: 'center' }} onClick={() => setMusicModal(false)}>Hủy</button>
+            <button className='btn go' onClick={saveMusicSetting}>Lưu nhạc</button>
+          </div>
+        </div>
+      </div>
+    )}
   </div>);
 }

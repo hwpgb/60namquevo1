@@ -979,8 +979,14 @@ export default function Book(){
 
   useEffect(()=>{
     try{
-      const p=new URLSearchParams(window.location.search).get('p');
-      if(p){
+      const params = new URLSearchParams(window.location.search);
+      const p = params.get('p');
+      const cin = params.get('cinema') || params.get('movie');
+      if (cin) {
+        setIntro(false);
+        const pg = p ? parseInt(p, 10) : 1;
+        setTimeout(() => startCinema(isNaN(pg) ? 1 : pg), 500);
+      } else if (p) {
         const pg=parseInt(p,10);
         if(!isNaN(pg)&&pg>0){
           setIntro(false);

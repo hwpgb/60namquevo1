@@ -985,7 +985,7 @@ export default function Book(){
       if (cin) {
         setIntro(false);
         const pg = p ? parseInt(p, 10) : 1;
-        setTimeout(() => startCinema(isNaN(pg) ? 1 : pg), 500);
+        startCinema(isNaN(pg) ? 1 : pg);
       } else if (p) {
         const pg=parseInt(p,10);
         if(!isNaN(pg)&&pg>0){

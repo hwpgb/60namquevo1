@@ -582,9 +582,6 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         const src=cleanSrc;
         const cap=slot.cap||'';
         const isBlank=!cap||cap.trim()===''||cap==='\xa0'||cap==='Chú thích ký ức…'||cap==='Tên video…'||cap==='Chú thích…';
-        if(!isBlank&&!cap.startsWith('Cựu học sinh Lớp 8A')&&!cap.startsWith('Tập thể Lớp 11A1')&&!cap.includes('Khóa 37')){
-          return {...slot,src:cleanSrc};
-        }
         let newCap='';
         if(src.includes('ky-niem-50-nam')){
           newCap='Kỷ niệm 50 năm thành lập trường';

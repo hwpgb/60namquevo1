@@ -153,16 +153,15 @@ html.narrow #music-widget{left:76px;top:8px}
 .choice-sub{font-size:clamp(11px, calc(var(--w) * 0.026), 13.5px);color:#6b4a24;margin:0 0 16px;line-height:1.4;opacity:.9}
 .choice-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;width:100%;max-width:96%;margin-bottom:14px}
 html.narrow .choice-grid{grid-template-columns:1fr;gap:10px}
-.choice-card{background:linear-gradient(145deg,#fffdf7,#f5ead0);border:1.5px solid rgba(195,155,90,.55);border-radius:12px;padding:12px 10px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 6px 18px rgba(50,30,10,.14);cursor:pointer;transition:all .28s ease}
+.choice-card{background:linear-gradient(145deg,#fffdf7,#f5ead0);border:1.5px solid rgba(195,155,90,.55);border-radius:12px;padding:18px 14px;display:flex;flex-direction:column;align-items:center;text-align:center;box-shadow:0 6px 18px rgba(50,30,10,.14);cursor:pointer;transition:all .28s ease}
 .choice-card:hover{transform:translateY(-4px) scale(1.02);border-color:#c9a45c;box-shadow:0 12px 28px rgba(50,30,10,.25), 0 0 15px rgba(201,164,92,.3)}
 .choice-card.cinema-pick{background:linear-gradient(145deg,#2e1e0f,#1c1208);border-color:rgba(226,192,121,.6);color:#f7ecd2}
 .choice-card.cinema-pick:hover{border-color:#f6e7bd;box-shadow:0 12px 28px rgba(0,0,0,.45), 0 0 20px rgba(201,164,92,.5)}
-.choice-card-icon{font-size:28px;margin-bottom:6px;line-height:1}
-.choice-card-title{font-size:14px;font-weight:700;color:#5a3710;margin-bottom:4px}
+.choice-card-title{font-size:15px;font-weight:700;color:#5a3710;margin-bottom:8px;letter-spacing:0.3px}
 .choice-card.cinema-pick .choice-card-title{color:#e8c782}
-.choice-card-desc{font-size:11px;color:#7c5c32;line-height:1.35;margin-bottom:10px;flex:1}
+.choice-card-desc{font-size:11.5px;color:#7c5c32;line-height:1.45;margin-bottom:14px;flex:1}
 .choice-card.cinema-pick .choice-card-desc{color:#d5be9b}
-.choice-btn{all:unset;font-size:11.5px;font-weight:700;padding:6px 14px;border-radius:999px;background:#8f5f1c;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:all .2s;white-space:nowrap}
+.choice-btn{all:unset;font-size:11.5px;font-weight:700;padding:7px 16px;border-radius:999px;background:#8f5f1c;color:#fff;box-shadow:0 2px 6px rgba(0,0,0,.2);transition:all .2s;white-space:nowrap}
 .choice-card:hover .choice-btn{background:#734b14}
 .choice-btn.cinema{background:radial-gradient(circle,#d4af37,#9d6d24);color:#2b1807;font-weight:800}
 .choice-card.cinema-pick:hover .choice-btn.cinema{background:radial-gradient(circle,#f6e7bd,#c9a45c)}
@@ -1090,7 +1089,7 @@ export default function Book(){
         await setDoc(doc(db, 'book', 'main'), { bgMusic: updated }, { merge: true });
       }
     } catch (_) {}
-    toast(`🎵 Đang phát: ${t.title} (${t.artist})`);
+    toast(`Đang phát: ${t.title} (${t.artist})`);
     setPlaylistModal(false);
   };
 
@@ -1104,12 +1103,12 @@ export default function Book(){
       }
       sendYtAudio('pauseVideo');
       setMusicPlaying(false);
-      toast('🔇 Đã tắt nhạc nền');
+      toast('Đã tắt nhạc nền');
     } else {
       userMutedRef.current = false;
       try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
       tryStartMusic(true);
-      toast(`🎵 Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
+      toast(`Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
     }
   };
 
@@ -2407,16 +2406,14 @@ export default function Book(){
             <p className='choice-sub'>Khép lại Lược sử & Ban giám hiệu qua các thời kỳ, hãy chọn cách bạn muốn khám phá những thước ảnh ký ức:</p>
             <div className='choice-grid'>
               <div className='choice-card' onClick={() => { step(1); }}>
-                <div className='choice-card-icon'>📖</div>
                 <div className='choice-card-title'>Xem từng trang sách</div>
                 <div className='choice-card-desc'>Tự do lật giở từng trang kỷ niệm, ngắm ảnh và đọc trọn vẹn những dòng cảm xúc theo nhịp điệu của bạn.</div>
                 <button type='button' className='choice-btn'>Lật tiếp sang Chương I ›</button>
               </div>
               <div className='choice-card cinema-pick' onClick={() => { startCinema(14); }}>
-                <div className='choice-card-icon'>🎬</div>
                 <div className='choice-card-title'>Chế độ xem phim</div>
                 <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 3 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
-                <button type='button' className='choice-btn cinema'>Bật xem phim ✦</button>
+                <button type='button' className='choice-btn cinema'>Bật xem phim</button>
               </div>
             </div>
             <div className='choice-quote-box'>
@@ -2549,7 +2546,9 @@ export default function Book(){
             <span className='eq-bar eq-b3' />
           </span>
         ) : (
-          <span className='music-icon'>🔇</span>
+          <span className='music-icon' style={{ display: 'inline-flex', alignItems: 'center' }}>
+            <svg width='13' height='13' viewBox='0 0 24 24' fill='currentColor' style={{ opacity: 0.85 }}><path d='M16.5 12c0-1.77-1.02-3.29-2.5-4.03v2.21l2.45 2.45c.03-.2.05-.41.05-.63zm2.5 0c0 .94-.2 1.82-.54 2.64l1.51 1.51C20.63 14.91 21 13.5 21 12c0-4.28-2.99-7.86-7-8.77v2.06c2.89.86 5 3.54 5 6.71zM4.27 3L3 4.27l4.73 4.73H3v6h4l5 5v-6.73l4.25 4.25c-.67.52-1.42.93-2.25 1.18v2.06c1.38-.31 2.63-.95 3.69-1.81L19.73 21 21 19.73l-9-9L4.27 3zM12 4L9.91 6.09 12 8.18V4z'/></svg>
+          </span>
         )}
         <span className='music-label'>{musicPlaying ? (bgMusic.title || 'Nhạc nền') : 'Bật nhạc'}</span>
       </button>
@@ -2559,7 +2558,7 @@ export default function Book(){
         onClick={() => setPlaylistModal(true)}
         title='Xem & chọn bài hát trong Tuyển Tập Nhạc Mái Trường'
       >
-        📜 Tuyển tập ({PLAYLIST_MAI_TRUONG.length})
+        Tuyển tập ({PLAYLIST_MAI_TRUONG.length})
       </button>
       {edit && (
         <button
@@ -2572,7 +2571,7 @@ export default function Book(){
           }}
           title='Đổi link YouTube nhạc nền cho website'
         >
-          ⚙ Đổi nhạc
+          Đổi nhạc
         </button>
       )}
     </div>
@@ -2709,7 +2708,7 @@ export default function Book(){
         }}
         title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 3s)'}
       >
-        {cinema ? '📖 Xem lật trang' : '🎬 Chế độ xem phim'}
+        {cinema ? 'Xem lật trang' : 'Chế độ xem phim'}
       </button>
     </div>
     <div id='dock' className='glass'>
@@ -2798,8 +2797,8 @@ export default function Book(){
         >
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(201,164,92,0.25)', paddingBottom: 12, marginBottom: 12 }}>
             <div>
-              <h3 style={{ margin: 0, color: '#e5b96a', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: 8 }}>
-                <span>🏫</span> Tuyển Tập Nhạc Mái Trường
+              <h3 style={{ margin: 0, color: '#e5b96a', fontSize: '1.25rem', fontWeight: 700, letterSpacing: '0.4px' }}>
+                Tuyển Tập Nhạc Mái Trường
               </h3>
               <p style={{ margin: '4px 0 0', fontSize: 12, color: '#a89a8a' }}>
                 Chọn ca khúc để thưởng thức cùng trang sách kỷ niệm
@@ -2836,7 +2835,7 @@ export default function Book(){
                   }}
                 >
                   <span className='track-number' style={{ width: 32, color: isCurrent ? '#ffd700' : '#c9a45c', fontWeight: 700, fontSize: 13 }}>
-                    {isCurrent && musicPlaying ? '🔊' : String(idx + 1).padStart(2, '0')}
+                    {isCurrent && musicPlaying ? '▶' : String(idx + 1).padStart(2, '0')}
                   </span>
                   <div className='track-info' style={{ flexGrow: 1, display: 'flex', flexDirection: 'column' }}>
                     <span className='track-title' style={{ fontWeight: 600, fontSize: 14, color: isCurrent ? '#ffe7ad' : '#f7ecd5' }}>
@@ -2868,7 +2867,7 @@ export default function Book(){
                 }}
                 style={{ fontSize: 11 }}
               >
-                ⚙ Tùy chỉnh link riêng
+                Tùy chỉnh link riêng
               </button>
             )}
           </div>
@@ -2878,7 +2877,7 @@ export default function Book(){
     {musicModal && (
       <div id='modal' className='on' onClick={() => setMusicModal(false)}>
         <div className='card glass' onClick={e => e.stopPropagation()} style={{ maxWidth: 440 }}>
-          <h3 style={{ marginBottom: 12 }}>⚙ Cài đặt nhạc nền</h3>
+          <h3 style={{ marginBottom: 12 }}>Cài đặt nhạc nền</h3>
           <p style={{ fontSize: 13, color: '#e8dcc4', marginBottom: 14 }}>
             Dán đường link YouTube (video ca nhạc, nhạc không lời, kỷ niệm...) để phát tự động dưới nền (không hiện video):
           </p>

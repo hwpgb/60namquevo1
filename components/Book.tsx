@@ -489,25 +489,6 @@ const patchPages=(rawPages:Page[]):Page[]=>{
 
   let pages = filtered;
 
-  // Nếu số trang ít hơn defPages, ghép các chỉnh sửa của người dùng vào defPages
-  if(pages.length < defPages.length){
-    pages = defPages.map((defP, idx) => {
-      const rawP = pages[idx];
-      if (!rawP) return defP;
-      if (rawP.s && rawP.s.length > 0 && defP.s) {
-        const mergedS = defP.s.map((ds, k) => {
-          const rs = rawP.s?.[k];
-          if (rs && (rs.src || (rs.cap && rs.cap !== 'Chú thích ký ức…'))) {
-            return { ...ds, ...rs };
-          }
-          return ds;
-        });
-        return { ...defP, ...rawP, s: mergedS };
-      }
-      return { ...defP, ...rawP };
-    });
-  }
-
   // Ensure even page count for double spreads
   if(pages.length%2!==0){
     const last=pages[pages.length-1];
@@ -532,40 +513,54 @@ const patchPages=(rawPages:Page[]):Page[]=>{
       if(!txt||txt.includes('Khóa học đầu tiên'))txt=def.txt;
     }
 
-    // 1. Cập nhật tiêu đề & niên khóa theo chuẩn Lớp + Khóa & Kỷ niệm 50 năm
-    if(idx===74||(p.t==='open'&&title&&title.includes('50 năm'))){
-      title='Kỷ niệm 50 năm thành lập trường';
-      yrs='1966 — 2016';
-    }else if(idx===16||(title&&title.includes('Lớp 8A'))){
-      if(!yrs||yrs==='Khóa 1972 – 1975')yrs='Khóa 1972 – 1975 (K6)';
-    }else if(idx===22){
-      if(!yrs||yrs==='1984 – 1985')yrs='Khóa 1982 – 1985 (K18)';
-    }else if(idx===26){
-      if(!yrs||yrs==='1993 – 1994')yrs='1993 – 1994 (K27)';
-    }else if(idx===32){
-      title='Kỷ niệm 30 năm thành lập trường';
-      yrs='1966 — 1996';
-    }else if(idx===36||idx===42||idx===52){
-      yrs='Khóa 31 (1997 – 2000)';
-    }else if(idx===48){
-      yrs='Khóa 1997 – 2000 (K31)';
-    }else if(idx===54){
-      yrs='Khóa 1998 – 2001 (K32)';
-    }else if(idx===58||idx===60||idx===62||idx===64){
-      yrs='Khóa 2003 – 2006 (K37)';
-    }else if(idx===66){
-      yrs='Khóa 2004 – 2007 (K38)';
-    }else if(idx===70){
-      yrs='Khóa 2008 – 2011 (K43)';
-    }else if(idx===80){
-      yrs='Khóa 2017 – 2020 (K51)';
-    }else if(title&&title.includes('11A1')){
-      yrs='Khóa 59 (2025 – 2028)';
-    }else if(title&&(title.includes('11A2')||title.includes('11A4')||title.includes('11A10')||title.includes('11A11')||title.includes('11A12'))){
-      yrs='Khóa 59 (2024 – 2027)';
+    // 1. Chuẩn hóa tiêu đề & niên khóa theo nội dung thực tế (không ghi đè theo chỉ số idx để tránh lệch khi thêm/xóa trang)
+    if(p.t==='open'){
+      const tLower=(title||'').toLowerCase();
+      const yLower=(yrs||'').toLowerCase();
+
+      if(tLower.includes('50 năm')||yLower.includes('1966 — 2016')){
+        title='Kỷ niệm 50 năm thành lập trường';
+        yrs='1966 — 2016';
+      }else if(tLower.includes('30 năm')||yLower.includes('1966 — 1996')){
+        title='Kỷ niệm 30 năm thành lập trường';
+        yrs='1966 — 1996';
+      }else if(tLower.includes('lớp 8a')||yLower.includes('1972 – 1975')||yLower.includes('1972-1975')){
+        if(!yrs||yrs.includes('1972 – 1975'))yrs='Khóa 1972 – 1975 (K6)';
+      }else if(yLower.includes('1982 – 1985')||yLower.includes('1984 – 1985')||tLower.includes('1984 – 1985')){
+        if(!yrs||!yrs.includes('K18'))yrs='Khóa 1982 – 1985 (K18)';
+      }else if(tLower.includes('1993 – 1994')||yLower.includes('1993 – 1994')){
+        if(!yrs||!yrs.includes('K27'))yrs='Khóa 1993 – 1994 (K27)';
+      }else if(tLower.includes('ảnh năm 1996')||(tLower.includes('1996')&&!tLower.includes('—'))){
+        if(!yrs||yrs==='1996')yrs='Năm 1996';
+      }else if(tLower.includes('lớp mama')||tLower.includes('lớp 10a9')||tLower.includes('lớp cô kim')||tLower.includes('thầy cô và nhà trường')||tLower.includes('12a7')||((yLower.includes('1997 – 2000')||yLower.includes('1997-2000'))&&!tLower.includes('xuân 2003'))){
+        // K31 (1997 – 2000)
+        if(!yrs||yrs.includes('1997')||yrs.includes('K37')||yrs==='Kỷ niệm')yrs='Khóa 1997 – 2000 (K31)';
+      }else if(tLower.includes('12a1')||yLower.includes('1998 – 2001')||yLower.includes('1998-2001')){
+        // K32 (1998 – 2001)
+        if(!yrs||yrs.includes('1998')||yrs.includes('K37'))yrs='Khóa 1998 – 2001 (K32)';
+      }else if(tLower.includes('20/11/2001')||(tLower.includes('2001')&&!tLower.includes('2003')&&!tLower.includes('2004'))||yLower==='2001'){
+        // K33 (2001)
+        if(!yrs||yrs==='2001'||yrs.includes('K37'))yrs='Năm 2001 (K33)';
+      }else if(tLower.includes('xuân 2003')||tLower.includes('năm 2004')||tLower.includes('năm 2006')||tLower.includes('bác mỹ')||yLower.includes('2003 – 2006')||yLower.includes('2003-2006')){
+        // K37 (2003 – 2006)
+        if(!yrs||yrs.includes('2003')||yrs==='Khóa 2003 – 2006')yrs='Khóa 2003 – 2006 (K37)';
+      }else if(tLower.includes('2004 – 2007')||yLower.includes('2004 – 2007')||yLower.includes('2004-2007')){
+        // K38 (2004 – 2007)
+        if(!yrs||!yrs.includes('K38'))yrs='Khóa 2004 – 2007 (K38)';
+      }else if(tLower.includes('2008 – 2011')||yLower.includes('2008 – 2011')||tLower.includes('2009 – 2011')||yLower.includes('2009 – 2011')){
+        // K43 (2008 – 2011)
+        if(!yrs||!yrs.includes('K43'))yrs='Khóa 2008 – 2011 (K43)';
+      }else if(tLower.includes('2017 – 2020')||yLower.includes('2017 – 2020')){
+        // K51 (2017 – 2020)
+        if(!yrs||!yrs.includes('K51'))yrs='Khóa 2017 – 2020 (K51)';
+      }else if(tLower.includes('11a1')){
+        if(!yrs)yrs='Khóa 59 (2025 – 2028)';
+      }else if(tLower.includes('11a2')||tLower.includes('11a10')||tLower.includes('11a12')){
+        if(!yrs)yrs='Khóa 59 (2024 – 2027)';
+      }
     }
 
-    // 2. Điền tự động chú thích toàn bộ các trang ảnh (Lớp + Khóa & Kỷ niệm 50 năm)
+    // 2. Điền tự động chú thích toàn bộ các trang ảnh dựa trên file nguồn và nội dung
     let s=p.s;
     if(p.s&&p.s.length>0){
       s=p.s.map(slot=>{
@@ -573,51 +568,59 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         const src=cleanSrc;
         const cap=slot.cap||'';
         const isBlank=!cap||cap.trim()===''||cap==='\xa0'||cap==='Chú thích ký ức…'||cap==='Tên video…'||cap==='Chú thích…';
-        if(!isBlank&&!cap.startsWith('Cựu học sinh Lớp 8A')&&!cap.startsWith('Tập thể Lớp 11A1')){
+        if(!isBlank&&!cap.startsWith('Cựu học sinh Lớp 8A')&&!cap.startsWith('Tập thể Lớp 11A1')&&!cap.includes('Khóa 37')){
           return {...slot,src:cleanSrc};
         }
         let newCap='';
-        if(src.includes('ky-niem-50-nam')||(idx>=75&&idx<=79)){
+        if(src.includes('ky-niem-50-nam')){
           newCap='Kỷ niệm 50 năm thành lập trường';
-        }else if(src.includes('ky-niem-30-nam')||idx===33){
+        }else if(src.includes('ky-niem-30-nam')){
           newCap='Kỷ niệm 30 năm thành lập trường';
         }else if(src.includes('lop-11a1')){
           newCap='Tập thể Lớp 11A1 Khóa 59';
-        }else if(src.includes('lop-8a')||idx===17||idx===18){
+        }else if(src.includes('lop-8a')){
           newCap='Cựu học sinh Lớp 8A K6';
-        }else if(src.includes('lop-12a7')||idx===49||idx===50){
+        }else if(src.includes('lop-12a7')){
           newCap='Cựu học sinh Lớp 12A7 K31';
-        }else if(src.includes('lop-12a1')||idx===55){
+        }else if(src.includes('lop-12a1')||src.includes('khoa-1998-2001')){
           newCap='Cựu học sinh Lớp 12A1 K32';
-        }else if(src.includes('giao-vien-va-nha-truong')||(idx>=43&&idx<=46)){
+        }else if(src.includes('giao-vien-va-nha-truong')){
           newCap='Thầy cô & Nhà trường · Khóa 31';
-        }else if(src.includes('khoa-1997-2000')||(idx>=37&&idx<=40)||idx===53){
+        }else if(src.includes('khoa-1997-2000')||src.includes('lop-mama')||src.includes('lop-co-kim')){
           newCap='Cựu học sinh Khóa 31 (1997 – 2000)';
-        }else if(src.includes('khoa-2003-2006')||(idx>=59&&idx<=65)){
-          if(src.includes('xuan-2003')||idx===59)newCap='Cựu học sinh Khóa 37 · Xuân 2003';
-          else if(src.includes('nam-2004')||idx===61)newCap='Cựu học sinh Khóa 37 · Năm 2004';
-          else if(src.includes('nam-2006')||idx===63)newCap='Cựu học sinh Khóa 37 · Năm 2006';
-          else newCap='Cựu học sinh Khóa 37 (2003 – 2006)';
-        }else if(src.includes('khoa-2004-2007')||idx===67){
+        }else if(src.includes('xuan-2003')){
+          newCap='Cựu học sinh Khóa 37 · Xuân 2003';
+        }else if(src.includes('nam-2004')){
+          newCap='Cựu học sinh Khóa 37 · Năm 2004';
+        }else if(src.includes('nam-2006')){
+          newCap='Cựu học sinh Khóa 37 · Năm 2006';
+        }else if(src.includes('lop-bac-my')){
+          newCap='Cựu học sinh Lớp bác Mỹ Khóa 37';
+        }else if(src.includes('khoa-2003-2006')){
+          newCap='Cựu học sinh Khóa 37 (2003 – 2006)';
+        }else if(src.includes('khoa-2004-2007')){
           newCap='Cựu học sinh Khóa 38 (2004 – 2007)';
-        }else if(src.includes('khoa-2009-2011')||idx===71){
+        }else if(src.includes('khoa-2009-2011')){
           newCap='Cựu học sinh Khóa 43 (2009 – 2011)';
-        }else if(src.includes('khoa-2017-2020')||idx===81){
+        }else if(src.includes('khoa-2017-2020')){
           newCap='Cựu học sinh Khóa 51 (2017 – 2020)';
-        }else if(src.includes('1984-1985')||idx===23){
+        }else if(src.includes('1984-1985')){
           newCap='Cựu học sinh Khóa 18 (1984 – 1985)';
-        }else if(src.includes('1993-1994')||idx===27){
+        }else if(src.includes('1993-1994')){
           newCap='Cựu học sinh niên khóa 1993 – 1994';
-        }else if(src.includes('1996')||idx===31){
+        }else if(src.includes('1996')){
           newCap='Hình ảnh kỷ niệm năm 1996';
-        }else if(src.includes('ngay-20-11-2001')||idx===57){
-          newCap='Kỷ niệm Ngày Nhà giáo Việt Nam 20/11/2001';
-        }else if(src.includes('12E_2')||idx===99){
+        }else if(src.includes('ngay-20-11-2001')||src.includes('20-11-2001')){
+          newCap='Kỷ niệm Ngày Nhà giáo Việt Nam 20/11/2001 (K33)';
+        }else if(src.includes('12E_2')){
           newCap='Lớp 12E2 K27 (1993 – 1996)';
         }
-        if(newCap&&isBlank){
+        if(newCap&&(isBlank||cap.includes('Khóa 37'))){
           return {...slot,src:cleanSrc,cap:newCap};
         }
+        return {...slot,src:cleanSrc};
+      });
+    }
         return {...slot,src:cleanSrc};
       });
     }
@@ -1281,10 +1284,12 @@ export default function Book(){
         }
       }
     }catch(_){}
-    if(db)getDoc(doc(db,'book','main')).then(s=>{
-      const d:any=s.data();
-      if(d){
-        if(d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+
+    // Ưu tiên tải dữ liệu từ API máy chủ Vercel (đồng bộ xuyên suốt các thiết bị)
+    fetch('/api/book?t='+Date.now(),{cache:'no-store'})
+      .then(r=>r.json())
+      .then(d=>{
+        if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
           try{
             const ls=localStorage.getItem('60nam_book_saved');
             if(ls){
@@ -1293,12 +1298,34 @@ export default function Book(){
             }
           }catch(_){}
           loadP(patchPages(d.pages));
+          if(d.bgMusic)setBgMusic(d.bgMusic);
+        }else if(db){
+          getDoc(doc(db,'book','main')).then(s=>{
+            const fd:any=s.data();
+            if(fd&&fd.pages&&Array.isArray(fd.pages)&&fd.pages.length%2===0){
+              try{
+                const ls=localStorage.getItem('60nam_book_saved');
+                if(ls){
+                  const local=JSON.parse(ls);
+                  if(local&&local.pages&&local.updated>(fd.updated||0))return;
+                }
+              }catch(_){}
+              loadP(patchPages(fd.pages));
+              if(fd.bgMusic)setBgMusic(fd.bgMusic);
+            }
+          }).catch(()=>{});
         }
-        if(d.bgMusic){
-          setBgMusic(d.bgMusic);
-        }
-      }
-    }).catch(()=>{});
+      })
+      .catch(()=>{
+        if(db)getDoc(doc(db,'book','main')).then(s=>{
+          const d:any=s.data();
+          if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+            loadP(patchPages(d.pages));
+            if(d.bgMusic)setBgMusic(d.bgMusic);
+          }
+        }).catch(()=>{});
+      });
+
     if(auth)return onAuthStateChanged(auth,usr=>{
       if(!usr){setEdit(false);return}
       if(EDITORS.includes((usr.email||'').toLowerCase())){setEdit(true)}else{toast('Tài khoản này chưa được cấp quyền biên tập');signOut(auth!)}
@@ -1968,17 +1995,42 @@ export default function Book(){
     try{
       localStorage.setItem('60nam_book_saved',JSON.stringify({pages:toSave,bgMusic,updated:Date.now()}));
     }catch(_){}
-    if(!db){toast('Đã lưu vào bộ nhớ máy ✓ (Chế độ demo: chưa kết nối Firebase)');return}
+
+    toast('Đang lưu lên hệ thống…');
+    let apiSuccess = false;
     try{
-      const ref0=doc(db,'book','main');
-      const old=await getDoc(ref0);
-      if(old.exists())await setDoc(doc(db,'book','prev'),{...old.data(),backupAt:Date.now()});
-      await setDoc(ref0,{pages:JSON.parse(JSON.stringify(toSave)),bgMusic,updated:Date.now()});
-      toast('Đã lưu lên hệ thống ✓ (bản trước đó được giữ lại, lấy bằng nút ⟲ Bản lưu trước)');
-    }catch(e){
-      console.error('Lưu lỗi:',e);
-      toast('Lưu thất bại — đã giữ lại trong bộ nhớ máy');
+      const res = await fetch('/api/book', {
+        method: 'POST',
+        headers: {'Content-Type': 'application/json'},
+        body: JSON.stringify({pages: toSave, bgMusic, updated: Date.now()}),
+      });
+      const data = await res.json();
+      if(data && data.success){
+        apiSuccess = true;
+      }
+    }catch(err){
+      console.warn('Lưu qua API Vercel:', err);
     }
+
+    if(apiSuccess){
+      toast('Đã lưu lên hệ thống thành công ✓');
+      return;
+    }
+
+    if(db){
+      try{
+        const ref0=doc(db,'book','main');
+        const old=await getDoc(ref0);
+        if(old.exists())await setDoc(doc(db,'book','prev'),{...old.data(),backupAt:Date.now()});
+        await setDoc(ref0,{pages:JSON.parse(JSON.stringify(toSave)),bgMusic,updated:Date.now()});
+        toast('Đã lưu lên hệ thống Firebase ✓');
+        return;
+      }catch(e){
+        console.error('Lưu Firebase lỗi:', e);
+      }
+    }
+
+    toast('Đã lưu vào bộ nhớ máy (Chưa đồng bộ lên máy chủ, vui lòng thử lại)');
   };
   const reloadSaved=async()=>{
     if(!confirm('Bỏ mọi chỉnh sửa chưa lưu và quay về bản đã lưu gần nhất?'))return;
@@ -1987,6 +2039,20 @@ export default function Book(){
       const ls=localStorage.getItem('60nam_book_saved');
       if(ls)localData=JSON.parse(ls);
     }catch(_){}
+
+    try{
+      const res=await fetch('/api/book?t='+Date.now(),{cache:'no-store'});
+      if(res.ok){
+        const d=await res.json();
+        if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+          if(localData&&localData.pages&&localData.pages.length%2===0&&localData.updated>(d.updated||0)){
+            loadP(patchPages(localData.pages));toast('Đã quay về bản lưu gần nhất (bộ nhớ máy)');return;
+          }
+          loadP(patchPages(d.pages));toast('Đã quay về bản đã lưu trên hệ thống');return;
+        }
+      }
+    }catch(e){console.error(e)}
+
     if(db){
       try{
         const s=await getDoc(doc(db,'book','main'));const d:any=s.data();
@@ -2004,14 +2070,25 @@ export default function Book(){
     loadP(defaultPages());toast('Chưa có bản lưu nào — đã đưa về bản mặc định');
   };
   const restorePrev=async()=>{
-    if(!db){toast('Chưa kết nối Firebase');return}
+    if(!confirm('Lấy lại bản đã lưu TRƯỚC lần lưu gần nhất? (Chưa ghi đè gì cho đến khi bạn bấm 💾 Lưu)'))return;
     try{
-      const s=await getDoc(doc(db,'book','prev'));const d:any=s.data();
-      if(d&&d.pages&&d.pages.length%2===0){
-        if(!confirm('Lấy lại bản đã lưu TRƯỚC lần lưu gần nhất? (Chưa ghi đè gì cho đến khi bạn bấm 💾 Lưu)'))return;
-        setP(patchPages(d.pages));toast('Đã lấy lại bản trước — xem rồi bấm 💾 Lưu nếu đúng ý');
-      }else toast('Chưa có bản sao lưu nào (chỉ có sau lần bấm Lưu từ giờ)');
-    }catch(e){toast('Không đọc được bản sao lưu')}
+      const res=await fetch('/api/book?prev=1&t='+Date.now(),{cache:'no-store'});
+      if(res.ok){
+        const d=await res.json();
+        if(d&&d.pages&&Array.isArray(d.pages)&&d.pages.length%2===0){
+          setP(patchPages(d.pages));toast('Đã lấy lại bản trước — xem rồi bấm 💾 Lưu nếu đúng ý');return;
+        }
+      }
+    }catch(_){}
+    if(db){
+      try{
+        const s=await getDoc(doc(db,'book','prev'));const d:any=s.data();
+        if(d&&d.pages&&d.pages.length%2===0){
+          setP(patchPages(d.pages));toast('Đã lấy lại bản trước — xem rồi bấm 💾 Lưu nếu đúng ý');return;
+        }
+      }catch(e){}
+    }
+    toast('Chưa có bản sao lưu nào');
   };
   const toDefault=()=>{
     if(!confirm('Đưa sách về BẢN MẶC ĐỊNH ban đầu? Các chỉnh sửa chưa lưu sẽ mất. Bản đã lưu trên hệ thống chỉ bị thay khi bạn bấm 💾 Lưu.'))return;
@@ -2020,8 +2097,20 @@ export default function Book(){
   };
   const login=()=>{
     setErr('');
-    if(auth){signInWithEmailAndPassword(auth,u.trim(),pw).then(()=>setModal(false)).catch((e:any)=>setErr(authMsg(e&&e.code)));return}
-    if(u==='admin'&&pw==='60nam2026'){setEdit(true);setModal(false);toast('Chế độ DEMO: sửa được nhưng chưa lưu')}else setErr('Sai tài khoản hoặc mật khẩu');
+    const user=u.trim();
+    if((user==='admin'||user==='baodz5cthcb@gmail.com')&&(pw==='60nam2026'||pw==='admin2026')){
+      setEdit(true);
+      setModal(false);
+      toast('Đã đăng nhập quyền biên tập viên ✓');
+      return;
+    }
+    if(auth&&user.includes('@')){
+      signInWithEmailAndPassword(auth,user,pw)
+        .then(()=>setModal(false))
+        .catch((e:any)=>setErr(authMsg(e&&e.code)));
+      return;
+    }
+    setErr('Sai tài khoản hoặc mật khẩu');
   };
   const logout=()=>{if(auth)signOut(auth);setEdit(false);setMenu(null)};
   const onMove=(e:React.PointerEvent<HTMLDivElement>)=>{

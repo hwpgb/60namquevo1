@@ -122,8 +122,16 @@ html.narrow .ph{cursor:pointer}
 html.narrow #music-widget{left:76px;top:8px}
 .music-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
 .music-btn:hover{background:rgba(65,40,15,.95);border-color:#f6e7bd;transform:scale(1.04)}
-.music-btn.playing{border-color:#d4af37;box-shadow:0 0 12px rgba(212,175,55,.35)}
+.music-btn.playing{border-color:#f6e7bd;background:rgba(60,38,12,.92);box-shadow:0 0 14px rgba(212,175,55,.45)}
+.music-btn.needs-click{animation:music-pulse 2s infinite}
+@keyframes music-pulse{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0);border-color:rgba(201,164,92,.45)}50%{box-shadow:0 0 12px rgba(212,175,55,.6);border-color:#f6e7bd}}
 .music-btn .music-icon{font-size:13px}
+.eq-bars{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
+.eq-bar{width:3px;background:#f6e7bd;border-radius:1px;animation:eq-anim .8s ease-in-out infinite alternate}
+.eq-b1{height:5px;animation-delay:0s}
+.eq-b2{height:12px;animation-delay:.25s}
+.eq-b3{height:8px;animation-delay:.45s}
+@keyframes eq-anim{0%{height:3px}100%{height:12px}}
 .music-playlist-btn{all:unset;cursor:pointer;background:rgba(30,18,6,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:5px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
 .music-playlist-btn:hover{background:rgba(55,32,10,.95);border-color:#f6e7bd;transform:scale(1.04);color:#fff}
 .music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
@@ -877,15 +885,157 @@ export default function Book(){
     videoId: PLAYLIST_MAI_TRUONG[0].id,
     title: `${PLAYLIST_MAI_TRUONG[0].title} · ${PLAYLIST_MAI_TRUONG[0].artist}`
   });
-  const [musicPlaying, setMusicPlaying] = useState(true);
+  const [musicPlaying, setMusicPlaying] = useState(false);
   const [musicModal, setMusicModal] = useState(false);
   const [playlistModal, setPlaylistModal] = useState(false);
   const [newMusicUrl, setNewMusicUrl] = useState('');
   const [newMusicTitle, setNewMusicTitle] = useState('');
   const musicStarted = useRef(false);
+  const ytPlayerRef = useRef<any>(null);
+  const ytReadyRef = useRef(false);
+  const shouldPlayRef = useRef(false);
+
+  const initYtPlayer = () => {
+    if (typeof window === 'undefined' || !(window as any).YT || !(window as any).YT.Player) return;
+    if (ytPlayerRef.current) return;
+    const elem = document.getElementById('yt-bg-audio');
+    if (!elem) return;
+
+    try {
+      const vid = bgMusic.videoId || PLAYLIST_MAI_TRUONG[0].id;
+      ytPlayerRef.current = new (window as any).YT.Player('yt-bg-audio', {
+        height: '180',
+        width: '240',
+        videoId: vid,
+        playerVars: {
+          autoplay: 1,
+          mute: 1,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          playsinline: 1,
+          loop: 1,
+          playlist: vid,
+          origin: window.location.origin
+        },
+        events: {
+          onReady: (e: any) => {
+            ytReadyRef.current = true;
+            if (shouldPlayRef.current) {
+              try {
+                e.target.unMute();
+                e.target.setVolume(100);
+                e.target.playVideo();
+                setMusicPlaying(true);
+              } catch (_) {}
+            }
+          },
+          onStateChange: (e: any) => {
+            if (e.data === 1) {
+              setMusicPlaying(true);
+            } else if (e.data === 2) {
+              setMusicPlaying(false);
+            } else if (e.data === 0) {
+              playNextTrack();
+            }
+          },
+          onError: (e: any) => {
+            console.warn('YouTube Player error code:', e.data);
+            playNextTrack();
+          }
+        }
+      });
+    } catch (err) {
+      console.warn('initYtPlayer error:', err);
+    }
+  };
+
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    if (!(window as any).YT) {
+      const tag = document.createElement('script');
+      tag.src = 'https://www.youtube.com/iframe_api';
+      const firstScriptTag = document.getElementsByTagName('script')[0];
+      firstScriptTag?.parentNode?.insertBefore(tag, firstScriptTag);
+    }
+    const prevCb = (window as any).onYouTubeIframeAPIReady;
+    (window as any).onYouTubeIframeAPIReady = () => {
+      if (typeof prevCb === 'function') prevCb();
+      initYtPlayer();
+    };
+    if ((window as any).YT && (window as any).YT.Player) {
+      initYtPlayer();
+    }
+  }, []);
+
+  const sendYtAudio = (func: string, args: any[] = []) => {
+    try {
+      const wrap = document.getElementById('yt-bg-player-wrap');
+      if (wrap) {
+        const iframes = wrap.querySelectorAll('iframe');
+        iframes.forEach((ifr: HTMLIFrameElement) => {
+          if (ifr.contentWindow) {
+            ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
+          }
+        });
+      }
+    } catch (_) {}
+  };
+
+  const tryStartMusic = () => {
+    shouldPlayRef.current = true;
+    musicStarted.current = true;
+    if (ytPlayerRef.current && ytReadyRef.current && ytPlayerRef.current.playVideo) {
+      try {
+        ytPlayerRef.current.unMute();
+        ytPlayerRef.current.setVolume(100);
+        ytPlayerRef.current.playVideo();
+        setMusicPlaying(true);
+      } catch (_) {}
+    } else {
+      initYtPlayer();
+    }
+    sendYtAudio('unMute');
+    sendYtAudio('setVolume', [100]);
+    sendYtAudio('playVideo');
+    setMusicPlaying(true);
+  };
+
+  useEffect(() => {
+    const onFirstInteraction = () => {
+      tryStartMusic();
+      window.removeEventListener('pointerdown', onFirstInteraction);
+      window.removeEventListener('keydown', onFirstInteraction);
+      window.removeEventListener('touchstart', onFirstInteraction);
+    };
+    window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
+    window.addEventListener('keydown', onFirstInteraction, { passive: true });
+    window.addEventListener('touchstart', onFirstInteraction, { passive: true });
+    return () => {
+      window.removeEventListener('pointerdown', onFirstInteraction);
+      window.removeEventListener('keydown', onFirstInteraction);
+      window.removeEventListener('touchstart', onFirstInteraction);
+    };
+  }, []);
+
+  const playNextTrack = () => {
+    setBgMusic(prev => {
+      const curId = prev.videoId;
+      const idx = PLAYLIST_MAI_TRUONG.findIndex(t => t.id === curId);
+      const nextIdx = (idx + 1) % PLAYLIST_MAI_TRUONG.length;
+      const nextTrack = PLAYLIST_MAI_TRUONG[nextIdx];
+      if (nextTrack) {
+        setTimeout(() => {
+          playTrack(nextTrack);
+        }, 150);
+      }
+      return prev;
+    });
+  };
 
   const playTrack = async (t: PlaylistItem) => {
-    tryStartMusic();
+    shouldPlayRef.current = true;
+    musicStarted.current = true;
     const updated = {
       url: t.url,
       videoId: t.id,
@@ -893,7 +1043,19 @@ export default function Book(){
     };
     setBgMusic(updated);
     setMusicPlaying(true);
-    setTimeout(() => sendYtAudio('playVideo'), 250);
+    if (ytPlayerRef.current && ytReadyRef.current && ytPlayerRef.current.loadVideoById) {
+      try {
+        ytPlayerRef.current.unMute();
+        ytPlayerRef.current.setVolume(100);
+        ytPlayerRef.current.loadVideoById(t.id);
+      } catch (_) {}
+    } else {
+      initYtPlayer();
+    }
+    sendYtAudio('loadVideoById', [t.id]);
+    sendYtAudio('unMute');
+    sendYtAudio('setVolume', [100]);
+    sendYtAudio('playVideo');
     try {
       const ls = localStorage.getItem('60nam_book_saved');
       let data = ls ? JSON.parse(ls) : {};
@@ -908,30 +1070,18 @@ export default function Book(){
     setPlaylistModal(false);
   };
 
-  const sendYtAudio = (func: string, args: any[] = []) => {
-    try {
-      const ifr = document.getElementById('yt-bg-audio') as HTMLIFrameElement | null;
-      if (ifr && ifr.contentWindow) {
-        ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
-      }
-    } catch (_) {}
-  };
-
-  const tryStartMusic = () => {
-    if (!musicStarted.current) {
-      musicStarted.current = true;
-      sendYtAudio('playVideo');
-    }
-  };
-
   const toggleMusic = () => {
-    tryStartMusic();
     if (musicPlaying) {
+      shouldPlayRef.current = false;
+      if (ytPlayerRef.current && ytPlayerRef.current.pauseVideo) {
+        try { ytPlayerRef.current.pauseVideo(); } catch (_) {}
+      }
       sendYtAudio('pauseVideo');
       setMusicPlaying(false);
+      toast('🔇 Đã tắt nhạc nền');
     } else {
-      sendYtAudio('playVideo');
-      setMusicPlaying(true);
+      tryStartMusic();
+      toast(`🎵 Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
     }
   };
 
@@ -949,7 +1099,23 @@ export default function Book(){
     setBgMusic(updatedMusic);
     setMusicModal(false);
     setMusicPlaying(true);
-    setTimeout(() => sendYtAudio('playVideo'), 300);
+    shouldPlayRef.current = true;
+    musicStarted.current = true;
+
+    if (ytPlayerRef.current && ytPlayerRef.current.loadVideoById) {
+      try {
+        ytPlayerRef.current.unMute();
+        ytPlayerRef.current.setVolume(100);
+        ytPlayerRef.current.loadVideoById(vid);
+      } catch (_) {}
+    } else {
+      initYtPlayer();
+    }
+    sendYtAudio('loadVideoById', [vid]);
+    sendYtAudio('unMute');
+    sendYtAudio('setVolume', [100]);
+    sendYtAudio('playVideo');
+
     try {
       const ls = localStorage.getItem('60nam_book_saved');
       let data = ls ? JSON.parse(ls) : {};
@@ -2310,11 +2476,19 @@ export default function Book(){
     <div id='music-widget'>
       <button
         type='button'
-        className={'music-btn' + (musicPlaying ? ' playing' : '')}
+        className={'music-btn' + (musicPlaying ? ' playing' : ' needs-click')}
         onClick={toggleMusic}
-        title={musicPlaying ? 'Tắt / Tạm dừng nhạc nền' : 'Bật nhạc nền'}
+        title={musicPlaying ? 'Nhấn để tắt nhạc nền' : 'Nhấn để bật nhạc nền'}
       >
-        <span className='music-icon'>{musicPlaying ? '🎵' : '🔇'}</span>
+        {musicPlaying ? (
+          <span className='eq-bars' aria-hidden='true'>
+            <span className='eq-bar eq-b1' />
+            <span className='eq-bar eq-b2' />
+            <span className='eq-bar eq-b3' />
+          </span>
+        ) : (
+          <span className='music-icon'>🔇</span>
+        )}
         <span className='music-label'>{musicPlaying ? (bgMusic.title || 'Nhạc nền') : 'Bật nhạc'}</span>
       </button>
       <button
@@ -2492,15 +2666,30 @@ export default function Book(){
     <div id='logo60' className={lgMode==='corner'?'corner':''} onClick={logoClick} title={lgMode==='corner'?'Về trang bìa':undefined} style={{left:lg.x,top:lg.y,width:lg.s,height:lg.s,opacity:(intro||!lgReady)?0:1,pointerEvents:(lgMode==='corner'&&!intro)?'auto':'none',transition:lgAnim?undefined:'none'}}>{logoOk?<img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false} onError={()=>setLogoOk(false)}/>:<span className='lgtxt'>60</span>}</div>
     <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{tryStartMusic();setIntro(false);setTimeout(()=>go(1),500)}}>Mở cuốn sách ký ức</button></div></div>
     {/* Hidden background YouTube audio player */}
-    {bgMusic.url && getYoutubeId(bgMusic.url) && (
+    <div
+      id='yt-bg-player-wrap'
+      aria-hidden='true'
+      style={{
+        position: 'fixed',
+        bottom: 0,
+        right: 0,
+        width: 240,
+        height: 180,
+        opacity: 0.001,
+        pointerEvents: 'none',
+        zIndex: -1,
+        overflow: 'hidden'
+      }}
+    >
+      <div id='yt-bg-audio' />
       <iframe
-        id='yt-bg-audio'
-        src={`https://www.youtube.com/embed/${getYoutubeId(bgMusic.url)}?enablejsapi=1&autoplay=1&loop=1&playlist=${getYoutubeId(bgMusic.url)}`}
-        style={{ position: 'fixed', left: -9999, top: -9999, width: 1, height: 1, opacity: 0, pointerEvents: 'none' }}
-        allow='autoplay'
+        id='yt-fallback-iframe'
+        src={`https://www.youtube.com/embed/${bgMusic.videoId || PLAYLIST_MAI_TRUONG[0].id}?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${bgMusic.videoId || PLAYLIST_MAI_TRUONG[0].id}&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
+        style={{ width: 240, height: 180, border: 0 }}
+        allow='autoplay; encrypted-media; picture-in-picture'
         title='Background Music'
       />
-    )}
+    </div>
     {cinema && (
       <CinemaMode
         slides={collectSlides()}

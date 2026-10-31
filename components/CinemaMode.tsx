@@ -233,6 +233,25 @@ export default function CinemaMode({
           border-color: #f6e7bd;
           box-shadow: 0 0 10px rgba(201,164,92,0.35);
         }
+        .cinema-eq-bars {
+          display: inline-flex;
+          align-items: flex-end;
+          gap: 2px;
+          height: 12px;
+        }
+        .cinema-eq-bar {
+          width: 3px;
+          background: #f6e7bd;
+          border-radius: 1px;
+          animation: cinema-eq-anim 0.8s ease-in-out infinite alternate;
+        }
+        .cinema-eq-b1 { height: 5px; animation-delay: 0s; }
+        .cinema-eq-b2 { height: 12px; animation-delay: 0.25s; }
+        .cinema-eq-b3 { height: 8px; animation-delay: 0.45s; }
+        @keyframes cinema-eq-anim {
+          0% { height: 3px; }
+          100% { height: 12px; }
+        }
         .cinema-close-btn {
           all: unset;
           cursor: pointer;
@@ -431,9 +450,17 @@ export default function CinemaMode({
             type="button"
             className={`cinema-music-btn ${musicPlaying ? 'playing' : ''}`}
             onClick={onToggleMusic}
-            title={musicPlaying ? 'Tắt / Bật tiếng nhạc' : 'Bật nhạc nền'}
+            title={musicPlaying ? 'Nhấn để tắt nhạc nền' : 'Nhấn để bật nhạc nền'}
           >
-            <span>{musicPlaying ? '🎵' : '🔇'}</span>
+            {musicPlaying ? (
+              <span className="cinema-eq-bars" aria-hidden="true">
+                <span className="cinema-eq-bar cinema-eq-b1" />
+                <span className="cinema-eq-bar cinema-eq-b2" />
+                <span className="cinema-eq-bar cinema-eq-b3" />
+              </span>
+            ) : (
+              <span>🔇</span>
+            )}
             <span>{musicPlaying ? (bgMusicTitle || 'Đang phát nhạc') : 'Bật nhạc'}</span>
           </button>
           {onOpenPlaylist && (

@@ -121,7 +121,10 @@ html.narrow .ph{cursor:pointer}
 .face.front{cursor:pointer}
 .face.back{cursor:pointer}
 .face button,.face a,.face input,.face textarea,.face [contenteditable=true],.face .choice-card,.face .choice-btn{cursor:auto}
-#stage{cursor:default}
+#stage{cursor:pointer}
+.slot .ph{cursor:pointer}
+.root:not(.editing) .slot .ph[style*="background-image"],.root:not(.editing) .slot .ph:has(img){cursor:zoom-in}
+.root.editing .slot .ph{cursor:default}
 #music-widget{position:fixed;top:12px;left:88px;z-index:45;display:flex;align-items:center;gap:6px}
 html.narrow #music-widget{left:76px;top:8px}
 .music-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
@@ -898,7 +901,9 @@ export default function Book(){
   const ytPlayerRef = useRef<any>(null);
   const ytReadyRef = useRef(false);
   const shouldPlayRef = useRef(false);
-  const userMutedRef = useRef(false);
+  const userMutedRef = useRef(
+    typeof window !== 'undefined' ? localStorage.getItem('60nam_music_muted') === '1' : false
+  );
 
   const initYtPlayer = () => {
     if (typeof window === 'undefined' || !(window as any).YT || !(window as any).YT.Player) return;
@@ -926,7 +931,8 @@ export default function Book(){
         events: {
           onReady: (e: any) => {
             ytReadyRef.current = true;
-            if (shouldPlayRef.current && !userMutedRef.current) {
+            const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+            if (shouldPlayRef.current && !isMuted) {
               try {
                 e.target.unMute();
                 e.target.setVolume(100);
@@ -941,14 +947,16 @@ export default function Book(){
             } else if (e.data === 2) {
               setMusicPlaying(false);
             } else if (e.data === 0) {
-              if (!userMutedRef.current) {
+              const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+              if (!isMuted) {
                 playNextTrack();
               }
             }
           },
           onError: (e: any) => {
             console.warn('YouTube Player error code:', e.data);
-            if (!userMutedRef.current) {
+            const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+            if (!isMuted) {
               playNextTrack();
             }
           }
@@ -990,7 +998,8 @@ export default function Book(){
   };
 
   const tryStartMusic = (force = false) => {
-    if (userMutedRef.current && !force) {
+    const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+    if (isMuted && !force) {
       return;
     }
     shouldPlayRef.current = true;
@@ -1013,7 +1022,8 @@ export default function Book(){
 
   useEffect(() => {
     const onFirstInteraction = () => {
-      if (!userMutedRef.current) {
+      const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+      if (!isMuted) {
         tryStartMusic();
       }
       window.removeEventListener('pointerdown', onFirstInteraction);
@@ -1047,6 +1057,7 @@ export default function Book(){
 
   const playTrack = async (t: PlaylistItem) => {
     userMutedRef.current = false;
+    try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
     shouldPlayRef.current = true;
     musicStarted.current = true;
     const updated = {
@@ -1086,6 +1097,7 @@ export default function Book(){
   const toggleMusic = () => {
     if (musicPlaying) {
       userMutedRef.current = true;
+      try { localStorage.setItem('60nam_music_muted', '1'); } catch (_) {}
       shouldPlayRef.current = false;
       if (ytPlayerRef.current && ytPlayerRef.current.pauseVideo) {
         try { ytPlayerRef.current.pauseVideo(); } catch (_) {}
@@ -1095,6 +1107,7 @@ export default function Book(){
       toast('🔇 Đã tắt nhạc nền');
     } else {
       userMutedRef.current = false;
+      try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
       tryStartMusic(true);
       toast(`🎵 Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
     }
@@ -1106,6 +1119,8 @@ export default function Book(){
       toast('Link YouTube không hợp lệ, vui lòng kiểm tra lại');
       return;
     }
+    userMutedRef.current = false;
+    try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
     const updatedMusic = {
       url: newMusicUrl.trim(),
       videoId: vid,
@@ -1190,7 +1205,8 @@ export default function Book(){
   };
 
   const startCinema = (fromPageIdx?: number) => {
-    if (!userMutedRef.current) {
+    const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+    if (!isMuted) {
       tryStartMusic();
     }
     const allSlides = collectSlides();
@@ -2016,7 +2032,11 @@ export default function Book(){
   };
   const faceClick=(side:string)=>(e:React.MouseEvent<HTMLDivElement>)=>{
     const target=e.target as HTMLElement;
-    if(target.closest('[contenteditable=true], button, a, input, textarea, select, .choice-card, .choice-btn, .editable-txt-box, .slbar, .drag-handle-corner, figure, .crest-frame, .rotbtn')) return;
+    if(edit){
+      if(target.closest('[contenteditable=true], button, a, input, textarea, select, .choice-card, .choice-btn, .editable-txt-box, .slbar, .drag-handle-corner, figure, .crest-frame, .rotbtn')) return;
+    } else {
+      if(target.closest('button, a, input, textarea, select, .choice-card, .choice-btn, .slbar, .drag-handle-corner, .rotbtn')) return;
+    }
     setMenu(null);
     if(narrow){
       const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-r.left)/r.width;
@@ -2081,7 +2101,7 @@ export default function Book(){
             : { backgroundImage: `url('${s.src}')`, backgroundPosition: 'center', backgroundSize: (s as any).fit || 'cover', ...(edit ? { position: 'relative' as const } : {}) })
         : (edit ? { position: 'relative' } : undefined);
       return (
-        <div className={'cell' + (isWideSpan ? ' wide' : '')} key={k} onClick={e => e.stopPropagation()}>
+        <div className={'cell' + (isWideSpan ? ' wide' : '')} key={k} onClick={edit ? (e => e.stopPropagation()) : undefined}>
           <figure
             className={'slot' + cls + tapeCls}
             style={slotStyle}
@@ -2098,9 +2118,28 @@ export default function Book(){
               document.querySelectorAll('.drop-target-active').forEach(el => el.classList.remove('drop-target-active'));
               document.querySelectorAll('.slot-drop-target').forEach(el => el.classList.remove('slot-drop-target'));
             }}
-            onClick={e => { e.stopPropagation(); if (!edit) slotClick(i, k); }}
+            onClick={e => {
+              if (edit) {
+                e.stopPropagation();
+              } else if (s.src) {
+                e.stopPropagation();
+                slotClick(i, k);
+              }
+            }}
           >
-            <div className='ph' style={phStyle} onClick={e => { e.stopPropagation(); slotClick(i, k); }}>
+            <div
+              className='ph'
+              style={phStyle}
+              onClick={e => {
+                if (edit) {
+                  e.stopPropagation();
+                  slotClick(i, k);
+                } else if (s.src) {
+                  e.stopPropagation();
+                  slotClick(i, k);
+                }
+              }}
+            >
               {s.src ? (adv ? <RotImg src={s.src} rot={rot} zoom={z} /> : null) : (cls ? 'ẢNH CHÂN DUNG' : 'ẢNH KỶ NIỆM')}
               {edit && (
                 <div className='slbar' onClick={e => e.stopPropagation()}>

@@ -46,16 +46,16 @@ export const PRINCIPALS:[string,string,string][]=[
 const mkPrincipals=():Page[]=>[
 {t:'open',kind:'principals',title:'Hiệu trưởng qua các thời kỳ',yrs:'1966 — 2026',txt:'Những người đã giữ ngọn lửa của nhà trường qua từng thời kỳ.'},
 {t:'pr',s:[
-  {src:PRINCIPALS[0][2],cap:`${PRINCIPALS[0][0]} · ${PRINCIPALS[0][1]}`},
-  {src:PRINCIPALS[1][2],cap:`${PRINCIPALS[1][0]} · ${PRINCIPALS[1][1]}`},
-  {src:PRINCIPALS[2][2],cap:`${PRINCIPALS[2][0]} · ${PRINCIPALS[2][1]}`},
-  {src:PRINCIPALS[3][2],cap:`${PRINCIPALS[3][0]} · ${PRINCIPALS[3][1]}`}
+  {src:PRINCIPALS[0][2],cap:`${PRINCIPALS[0][0]}\n${PRINCIPALS[0][1]}`},
+  {src:PRINCIPALS[1][2],cap:`${PRINCIPALS[1][0]}\n${PRINCIPALS[1][1]}`},
+  {src:PRINCIPALS[2][2],cap:`${PRINCIPALS[2][0]}\n${PRINCIPALS[2][1]}`},
+  {src:PRINCIPALS[3][2],cap:`${PRINCIPALS[3][0]}\n${PRINCIPALS[3][1]}`}
 ]},
 {t:'pr',s:[
-  {src:PRINCIPALS[4][2],cap:`${PRINCIPALS[4][0]} · ${PRINCIPALS[4][1]}`},
-  {src:PRINCIPALS[5][2],cap:`${PRINCIPALS[5][0]} · ${PRINCIPALS[5][1]}`},
-  {src:PRINCIPALS[6][2],cap:`${PRINCIPALS[6][0]} · ${PRINCIPALS[6][1]}`},
-  {src:PRINCIPALS[7][2],cap:`${PRINCIPALS[7][0]} · ${PRINCIPALS[7][1]}`}
+  {src:PRINCIPALS[4][2],cap:`${PRINCIPALS[4][0]}\n${PRINCIPALS[4][1]}`},
+  {src:PRINCIPALS[5][2],cap:`${PRINCIPALS[5][0]}\n${PRINCIPALS[5][1]}`},
+  {src:PRINCIPALS[6][2],cap:`${PRINCIPALS[6][0]}\n${PRINCIPALS[6][1]}`},
+  {src:PRINCIPALS[7][2],cap:`${PRINCIPALS[7][0]}\n${PRINCIPALS[7][1]}`}
 ]},
 {t:'q',txt:'“Tôn sư trọng đạo — Uống nước nhớ nguồn. Tri ân công lao các thế hệ lãnh đạo nhà trường qua các thời kỳ.”',by:'THẦY TRÒ QUẾ VÕ SỐ 1'}
 ];

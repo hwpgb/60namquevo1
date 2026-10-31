@@ -532,16 +532,30 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         if(!yrs||!yrs.includes('K27'))yrs='Khóa 1993 – 1994 (K27)';
       }else if(tLower.includes('ảnh năm 1996')||(tLower.includes('1996')&&!tLower.includes('—'))){
         if(!yrs||yrs==='1996')yrs='Năm 1996';
-      }else if(tLower.includes('lớp mama')||tLower.includes('lớp 10a9')||tLower.includes('lớp cô kim')||tLower.includes('thầy cô và nhà trường')||tLower.includes('12a7')||((yLower.includes('1997 – 2000')||yLower.includes('1997-2000'))&&!tLower.includes('xuân 2003'))){
-        // K31 (1997 – 2000)
-        if(!yrs||yrs.includes('1997')||yrs.includes('K37')||yrs==='Kỷ niệm')yrs='Khóa 1997 – 2000 (K31)';
+      }else if(tLower.includes('lớp cô kim')||tLower.includes('10a3')||tLower.includes('12a3')){
+        // Lớp cô Kim là 12A3 (K31)
+        title='Lớp 12A3';
+        yrs='Khóa 1997 – 2000 (K31)';
+      }else if(tLower.includes('lớp mama')||tLower.includes('10a9')||tLower.includes('12a9')){
+        // Lớp Mama là 12A9 (K31)
+        title='Lớp 12A9';
+        yrs='Khóa 1997 – 2000 (K31)';
+      }else if(tLower.includes('bác mỹ')||(tLower.includes('12a1')&&(yLower.includes('2003')||yLower.includes('2006')))){
+        // Lớp bác Mỹ là 12A1 (K37)
+        title='Lớp 12A1';
+        yrs='Khóa 2003 – 2006 (K37)';
       }else if(tLower.includes('12a1')||yLower.includes('1998 – 2001')||yLower.includes('1998-2001')){
         // K32 (1998 – 2001)
-        if(!yrs||yrs.includes('1998')||yrs.includes('K37'))yrs='Khóa 1998 – 2001 (K32)';
+        title='Lớp 12A1';
+        yrs='Khóa 1998 – 2001 (K32)';
+      }else if(tLower.includes('thầy cô và nhà trường')||tLower.includes('12a7')||((yLower.includes('1997 – 2000')||yLower.includes('1997-2000'))&&!tLower.includes('xuân 2003'))){
+        // K31 (1997 – 2000)
+        if(!yrs||yrs.includes('1997')||yrs.includes('K37')||yrs==='Kỷ niệm')yrs='Khóa 1997 – 2000 (K31)';
       }else if(tLower.includes('20/11/2001')||(tLower.includes('2001')&&!tLower.includes('2003')&&!tLower.includes('2004'))||yLower==='2001'){
         // K33 (2001)
-        if(!yrs||yrs==='2001'||yrs.includes('K37'))yrs='Năm 2001 (K33)';
-      }else if(tLower.includes('xuân 2003')||tLower.includes('năm 2004')||tLower.includes('năm 2006')||tLower.includes('bác mỹ')||yLower.includes('2003 – 2006')||yLower.includes('2003-2006')){
+        title='Kỷ niệm Ngày Nhà giáo Việt Nam 20/11/2001';
+        yrs='Năm 2001 (K33)';
+      }else if(tLower.includes('xuân 2003')||tLower.includes('năm 2004')||tLower.includes('năm 2006')||yLower.includes('2003 – 2006')||yLower.includes('2003-2006')){
         // K37 (2003 – 2006)
         if(!yrs||yrs.includes('2003')||yrs==='Khóa 2003 – 2006')yrs='Khóa 2003 – 2006 (K37)';
       }else if(tLower.includes('2004 – 2007')||yLower.includes('2004 – 2007')||yLower.includes('2004-2007')){
@@ -586,7 +600,13 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           newCap='Cựu học sinh Lớp 12A1 K32';
         }else if(src.includes('giao-vien-va-nha-truong')){
           newCap='Thầy cô & Nhà trường · Khóa 31';
-        }else if(src.includes('khoa-1997-2000')||src.includes('lop-mama')||src.includes('lop-co-kim')){
+        }else if(src.includes('lop-co-kim')){
+          newCap='Cựu học sinh Lớp 12A3 K31';
+        }else if(src.includes('lop-mama')){
+          newCap='Cựu học sinh Lớp 12A9 K31';
+        }else if(src.includes('lop-bac-my')){
+          newCap='Cựu học sinh Lớp 12A1 K37';
+        }else if(src.includes('khoa-1997-2000')){
           newCap='Cựu học sinh Khóa 31 (1997 – 2000)';
         }else if(src.includes('xuan-2003')){
           newCap='Cựu học sinh Khóa 37 · Xuân 2003';
@@ -594,8 +614,6 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           newCap='Cựu học sinh Khóa 37 · Năm 2004';
         }else if(src.includes('nam-2006')){
           newCap='Cựu học sinh Khóa 37 · Năm 2006';
-        }else if(src.includes('lop-bac-my')){
-          newCap='Cựu học sinh Lớp bác Mỹ Khóa 37';
         }else if(src.includes('khoa-2003-2006')){
           newCap='Cựu học sinh Khóa 37 (2003 – 2006)';
         }else if(src.includes('khoa-2004-2007')){
@@ -615,10 +633,34 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         }else if(src.includes('12E_2')){
           newCap='Lớp 12E2 K27 (1993 – 1996)';
         }
-        if(newCap&&(isBlank||cap.includes('Khóa 37'))){
-          return {...slot,src:cleanSrc,cap:newCap};
+
+        let rot = slot.rot;
+        let ar = slot.ar;
+        if(src.includes('lop-mama-002')){
+          rot = 0; ar = '3/4';
+        }else if(src.includes('lop-12a1-khoa-1998-2001-001')){
+          rot = 0; ar = '3/4';
+        }else if(src.includes('lop-12a1-khoa-1998-2001-002')){
+          rot = 90; ar = '4/3';
+        }else if(src.includes('lop-mama-001')){
+          ar = '3/4';
+        }else if(src.includes('c4-khoa-1997-2000-008')||src.includes('c4-khoa-1997-2000-009')||src.includes('c4-khoa-1997-2000-013')){
+          rot = 270; ar = '3/4';
+        }else if(src.includes('c4-khoa-2004-2007-003')){
+          rot = 270;
+        }else if(src.includes('giao-vien-va-nha-truong')){
+          ar = '3/4';
         }
-        return {...slot,src:cleanSrc};
+
+        if(p.t==='pr'){
+          const prCap = (slot.cap||'').replace(' · ', '\n');
+          return {...slot, src: cleanSrc, cap: prCap, rot, ar: '3/4'};
+        }
+
+        if(newCap&&(isBlank||cap.includes('Khóa 37')||cap.includes('Khóa 31')||cap.includes('Lớp 10A3')||cap.includes('Lớp 10A9'))){
+          return {...slot,src:cleanSrc,cap:newCap,rot,ar};
+        }
+        return {...slot,src:cleanSrc,rot,ar};
       });
     }
 
@@ -871,6 +913,7 @@ export default function Book(){
   const [narrow,setNarrow]=useState(false);
   const [mv,setMv]=useState<number[]>([]);
   const [edit,setEdit]=useState(false);
+  const [views, setViews] = useState<{ totalViews: number; uniqueVisitors: number }>({ totalViews: 0, uniqueVisitors: 0 });
   const [menu,setMenu]=useState<number|null>(null);
   const [modal,setModal]=useState(false);
   const [toc,setToc]=useState(false);
@@ -1328,6 +1371,43 @@ export default function Book(){
       if(EDITORS.includes((usr.email||'').toLowerCase())){setEdit(true)}else{toast('Tài khoản này chưa được cấp quyền biên tập');signOut(auth!)}
     });
   },[]);
+
+  // Đếm lượt truy cập website tự động (lưu trữ Vercel Blob)
+  useEffect(() => {
+    try {
+      const visitedKey = '60nam_visited_' + new Date().toISOString().slice(0, 10);
+      const isUnique = !localStorage.getItem(visitedKey);
+      if (isUnique) {
+        localStorage.setItem(visitedKey, '1');
+      }
+      fetch('/api/views', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ isUnique }),
+      })
+        .then(r => r.json())
+        .then(d => {
+          if (d && typeof d.totalViews === 'number') {
+            setViews({ totalViews: d.totalViews, uniqueVisitors: d.uniqueVisitors || d.totalViews });
+          }
+        })
+        .catch(() => {});
+    } catch (_) {}
+  }, []);
+
+  // Cập nhật lại số liệu thống kê khi đăng nhập biên tập
+  useEffect(() => {
+    if (edit) {
+      fetch('/api/views')
+        .then(r => r.json())
+        .then(d => {
+          if (d && typeof d.totalViews === 'number') {
+            setViews({ totalViews: d.totalViews, uniqueVisitors: d.uniqueVisitors || d.totalViews });
+          }
+        })
+        .catch(() => {});
+    }
+  }, [edit]);
 
   useEffect(()=>{
     try{
@@ -2266,7 +2346,21 @@ export default function Book(){
                   fontSize: (s as any).capSz ? `calc(${(s as any).capSz} * 1em)` : undefined,
                 }}
               >
-                {s.cap}
+                {isPr && s.cap ? (
+                  (() => {
+                    const parts = s.cap.includes('\n') ? s.cap.split('\n') : s.cap.split(' · ');
+                    const name = parts[0]?.trim();
+                    const yrs = parts.slice(1).join(' · ').trim();
+                    return (
+                      <>
+                        <span className='pr-name'>{name}</span>
+                        {yrs && <span className='pr-years'>{yrs}</span>}
+                      </>
+                    );
+                  })()
+                ) : (
+                  s.cap
+                )}
               </figcaption>
               {edit && (
                 <div className='cap-tools' onClick={e => e.stopPropagation()}>
@@ -2661,7 +2755,23 @@ export default function Book(){
         </button>
       )}
     </div>
-    {edit?<div id='tb' className='glass'><button className='btn' onClick={()=>addAfter(here(),'tx')}>＋ 1 trang</button><button className='btn' onClick={()=>addAfter(here(),'vd')}>＋ 1 video</button><button className='btn' onClick={save}>💾 Lưu</button><button className='btn' onClick={logout}>Đăng xuất</button></div>:<button id='lock' className='glass' title='Đăng nhập biên tập' aria-label='Đăng nhập biên tập' onClick={()=>setModal(true)}>🔒</button>}
+    {edit ? (
+      <div id='tb' className='glass'>
+        <div
+          className='view-counter-badge'
+          title={`Thống kê truy cập website:\n• Tổng lượt xem: ${views.totalViews.toLocaleString('vi-VN')}\n• Khách truy cập: ${views.uniqueVisitors.toLocaleString('vi-VN')}`}
+          onClick={() => toast(`👁 Thống kê: ${views.totalViews.toLocaleString('vi-VN')} lượt xem (${views.uniqueVisitors.toLocaleString('vi-VN')} khách)`)}
+        >
+          👁 {views.totalViews.toLocaleString('vi-VN')} lượt xem
+        </div>
+        <button className='btn' onClick={()=>addAfter(here(),'tx')}>＋ 1 trang</button>
+        <button className='btn' onClick={()=>addAfter(here(),'vd')}>＋ 1 video</button>
+        <button className='btn' onClick={save}>💾 Lưu</button>
+        <button className='btn' onClick={logout}>Đăng xuất</button>
+      </div>
+    ) : (
+      <button id='lock' className='glass' title='Đăng nhập biên tập' aria-label='Đăng nhập biên tập' onClick={()=>setModal(true)}>🔒</button>
+    )}
     {edit&&<div id='tb2' className='glass'><button className='btn' onClick={undo} disabled={!hn} title='Hoàn tác thao tác vừa làm (Ctrl+Z)'>↩ Hoàn tác</button><button className='btn' onClick={restorePrev} title='Lấy lại bản đã lưu trước lần Lưu gần nhất'>⟲ Bản lưu trước</button><button className='btn' onClick={reloadSaved} title='Bỏ các chỉnh sửa chưa lưu'>↺ Bỏ chưa lưu</button><button className='btn' onClick={toDefault} title='Đưa sách về bản mặc định ban đầu'>⟳ Về mặc định</button></div>}
     <div
       id='stage'

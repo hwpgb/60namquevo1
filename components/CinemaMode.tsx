@@ -62,7 +62,7 @@ export default function CinemaMode({
 
   const slide = safeSlides[curIdx] || safeSlides[0];
 
-  // Auto advance every 5 seconds (100 ticks of 50ms = 5000ms = 5s)
+  // Auto advance every 3 seconds (100 ticks of 30ms = 3000ms = 3s)
   useEffect(() => {
     if (!isPlaying || safeSlides.length <= 1) {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -75,9 +75,9 @@ export default function CinemaMode({
           setCurIdx(i => (i + 1) % safeSlides.length);
           return 0;
         }
-        return prev + 1; // 1% every 50ms = 5,000ms = 5s
+        return prev + 1; // 1% every 30ms = 3,000ms = 3s
       });
-    }, 50);
+    }, 30);
 
     return () => {
       if (timerRef.current) clearInterval(timerRef.current);
@@ -326,7 +326,7 @@ export default function CinemaMode({
           object-fit: contain;
           border-radius: 4px;
           display: block;
-          transition: transform 5s ease-out;
+          transition: transform 3s ease-out;
         }
         .cinema-img.kenburns {
           transform: scale(1.045);
@@ -499,7 +499,7 @@ export default function CinemaMode({
         </div>
       </div>
 
-      {/* 5s Countdown Progress Line */}
+      {/* 3s Countdown Progress Line */}
       <div className="cinema-progress-line">
         <div
           className="cinema-progress-bar"
@@ -548,7 +548,7 @@ export default function CinemaMode({
             type="button"
             className="cinema-ctrl-btn play-btn"
             onClick={() => setIsPlaying(!isPlaying)}
-            title={isPlaying ? 'Tạm dừng tự động (mỗi 5s)' : 'Tiếp tục tự động trình chiếu'}
+            title={isPlaying ? 'Tạm dừng tự động (mỗi 3s)' : 'Tiếp tục tự động trình chiếu'}
           >
             {isPlaying ? '⏸' : '▶'}
           </button>

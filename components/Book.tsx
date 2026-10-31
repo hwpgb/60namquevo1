@@ -2415,7 +2415,7 @@ export default function Book(){
               <div className='choice-card cinema-pick' onClick={() => { startCinema(14); }}>
                 <div className='choice-card-icon'>🎬</div>
                 <div className='choice-card-title'>Chế độ xem phim</div>
-                <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 5 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
+                <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 3 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
                 <button type='button' className='choice-btn cinema'>Bật xem phim ✦</button>
               </div>
             </div>
@@ -2707,7 +2707,7 @@ export default function Book(){
           if (cinema) setCinema(false);
           else startCinema(2 * cur - 1);
         }}
-        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 5s)'}
+        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 3s)'}
       >
         {cinema ? '📖 Xem lật trang' : '🎬 Chế độ xem phim'}
       </button>

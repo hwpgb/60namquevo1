@@ -118,6 +118,10 @@ html.narrow #dock button{min-height:44px}
 html.narrow .ph{cursor:pointer}
 .empty-page-add-slot{margin:auto;padding:14px 22px;border:2px dashed rgba(143,95,28,.45);border-radius:12px;background:rgba(255,253,245,.75);color:var(--gold);font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(50,30,10,.08);transition:all .25s}
 .empty-page-add-slot:hover{background:rgba(255,253,245,.98);border-color:var(--gold);transform:scale(1.03)}
+.face.front{cursor:pointer}
+.face.back{cursor:pointer}
+.face button,.face a,.face input,.face textarea,.face [contenteditable=true],.face .choice-card,.face .choice-btn{cursor:auto}
+#stage{cursor:default}
 #music-widget{position:fixed;top:12px;left:88px;z-index:45;display:flex;align-items:center;gap:6px}
 html.narrow #music-widget{left:76px;top:8px}
 .music-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.82);backdrop-filter:blur(10px);color:#f6e7bd;border:1px solid rgba(201,164,92,.45);border-radius:999px;padding:5px 12px;font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px;box-shadow:0 3px 12px rgba(0,0,0,.35);transition:all .25s;white-space:nowrap}
@@ -894,6 +898,7 @@ export default function Book(){
   const ytPlayerRef = useRef<any>(null);
   const ytReadyRef = useRef(false);
   const shouldPlayRef = useRef(false);
+  const userMutedRef = useRef(false);
 
   const initYtPlayer = () => {
     if (typeof window === 'undefined' || !(window as any).YT || !(window as any).YT.Player) return;
@@ -921,7 +926,7 @@ export default function Book(){
         events: {
           onReady: (e: any) => {
             ytReadyRef.current = true;
-            if (shouldPlayRef.current) {
+            if (shouldPlayRef.current && !userMutedRef.current) {
               try {
                 e.target.unMute();
                 e.target.setVolume(100);
@@ -936,12 +941,16 @@ export default function Book(){
             } else if (e.data === 2) {
               setMusicPlaying(false);
             } else if (e.data === 0) {
-              playNextTrack();
+              if (!userMutedRef.current) {
+                playNextTrack();
+              }
             }
           },
           onError: (e: any) => {
             console.warn('YouTube Player error code:', e.data);
-            playNextTrack();
+            if (!userMutedRef.current) {
+              playNextTrack();
+            }
           }
         }
       });
@@ -972,17 +981,18 @@ export default function Book(){
     try {
       const wrap = document.getElementById('yt-bg-player-wrap');
       if (wrap) {
-        const iframes = wrap.querySelectorAll('iframe');
-        iframes.forEach((ifr: HTMLIFrameElement) => {
-          if (ifr.contentWindow) {
-            ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
-          }
-        });
+        const ifr = wrap.querySelector('iframe');
+        if (ifr && ifr.contentWindow) {
+          ifr.contentWindow.postMessage(JSON.stringify({ event: 'command', func, args }), '*');
+        }
       }
     } catch (_) {}
   };
 
-  const tryStartMusic = () => {
+  const tryStartMusic = (force = false) => {
+    if (userMutedRef.current && !force) {
+      return;
+    }
     shouldPlayRef.current = true;
     musicStarted.current = true;
     if (ytPlayerRef.current && ytReadyRef.current && ytPlayerRef.current.playVideo) {
@@ -994,16 +1004,18 @@ export default function Book(){
       } catch (_) {}
     } else {
       initYtPlayer();
+      sendYtAudio('unMute');
+      sendYtAudio('setVolume', [100]);
+      sendYtAudio('playVideo');
+      setMusicPlaying(true);
     }
-    sendYtAudio('unMute');
-    sendYtAudio('setVolume', [100]);
-    sendYtAudio('playVideo');
-    setMusicPlaying(true);
   };
 
   useEffect(() => {
     const onFirstInteraction = () => {
-      tryStartMusic();
+      if (!userMutedRef.current) {
+        tryStartMusic();
+      }
       window.removeEventListener('pointerdown', onFirstInteraction);
       window.removeEventListener('keydown', onFirstInteraction);
       window.removeEventListener('touchstart', onFirstInteraction);
@@ -1034,6 +1046,7 @@ export default function Book(){
   };
 
   const playTrack = async (t: PlaylistItem) => {
+    userMutedRef.current = false;
     shouldPlayRef.current = true;
     musicStarted.current = true;
     const updated = {
@@ -1051,11 +1064,11 @@ export default function Book(){
       } catch (_) {}
     } else {
       initYtPlayer();
+      sendYtAudio('loadVideoById', [t.id]);
+      sendYtAudio('unMute');
+      sendYtAudio('setVolume', [100]);
+      sendYtAudio('playVideo');
     }
-    sendYtAudio('loadVideoById', [t.id]);
-    sendYtAudio('unMute');
-    sendYtAudio('setVolume', [100]);
-    sendYtAudio('playVideo');
     try {
       const ls = localStorage.getItem('60nam_book_saved');
       let data = ls ? JSON.parse(ls) : {};
@@ -1072,6 +1085,7 @@ export default function Book(){
 
   const toggleMusic = () => {
     if (musicPlaying) {
+      userMutedRef.current = true;
       shouldPlayRef.current = false;
       if (ytPlayerRef.current && ytPlayerRef.current.pauseVideo) {
         try { ytPlayerRef.current.pauseVideo(); } catch (_) {}
@@ -1080,7 +1094,8 @@ export default function Book(){
       setMusicPlaying(false);
       toast('🔇 Đã tắt nhạc nền');
     } else {
-      tryStartMusic();
+      userMutedRef.current = false;
+      tryStartMusic(true);
       toast(`🎵 Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
     }
   };
@@ -1175,7 +1190,9 @@ export default function Book(){
   };
 
   const startCinema = (fromPageIdx?: number) => {
-    tryStartMusic();
+    if (!userMutedRef.current) {
+      tryStartMusic();
+    }
     const allSlides = collectSlides();
     let targetIdx = 0;
     if (fromPageIdx !== undefined) {
@@ -1998,13 +2015,19 @@ export default function Book(){
     raf.current=requestAnimationFrame(()=>{raf.current=0;if(tilt.current)tilt.current.style.transform=`rotateX(${(.5-y)*4}deg) rotateY(${(x-.5)*5}deg)`});
   };
   const faceClick=(side:string)=>(e:React.MouseEvent<HTMLDivElement>)=>{
-    if((e.target as HTMLElement).closest('[contenteditable=true]'))return;
+    const target=e.target as HTMLElement;
+    if(target.closest('[contenteditable=true], button, a, input, textarea, select, .choice-card, .choice-btn, .editable-txt-box, .slbar, .drag-handle-corner, figure, .crest-frame, .rotbtn')) return;
     setMenu(null);
-    const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-r.left)/r.width;
-    if(narrow){if(x>.7)step(1);else if(x<.3)step(-1);return}
+    if(narrow){
+      const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-r.left)/r.width;
+      if(x>=0.5) step(1);
+      else step(-1);
+      return;
+    }
     if(cur===0){go(1);return}
     if(cur===maxCur){go(cur-1);return}
-    if(side==='front'&&x>.75)go(cur+1);else if(side==='back'&&x<.25)go(cur-1);
+    if(side==='front') go(cur+1);
+    else if(side==='back') go(cur-1);
   };
 
   const slotsEl=(p:Page,i:number,cls:string)=>{
@@ -2344,13 +2367,13 @@ export default function Book(){
             <h2 className='choice-head'>BẠN MUỐN TRẢI NGHIỆM CUỐN SÁCH THEO CÁCH NÀO?</h2>
             <p className='choice-sub'>Khép lại Lược sử & Ban giám hiệu qua các thời kỳ, hãy chọn cách bạn muốn khám phá những thước ảnh ký ức:</p>
             <div className='choice-grid'>
-              <div className='choice-card' onClick={() => { tryStartMusic(); step(1); }}>
+              <div className='choice-card' onClick={() => { step(1); }}>
                 <div className='choice-card-icon'>📖</div>
                 <div className='choice-card-title'>Xem từng trang sách</div>
                 <div className='choice-card-desc'>Tự do lật giở từng trang kỷ niệm, ngắm ảnh và đọc trọn vẹn những dòng cảm xúc theo nhịp điệu của bạn.</div>
                 <button type='button' className='choice-btn'>Lật tiếp sang Chương I ›</button>
               </div>
-              <div className='choice-card cinema-pick' onClick={() => { tryStartMusic(); startCinema(14); }}>
+              <div className='choice-card cinema-pick' onClick={() => { startCinema(14); }}>
                 <div className='choice-card-icon'>🎬</div>
                 <div className='choice-card-title'>Chế độ xem phim</div>
                 <div className='choice-card-desc'>Thả mình vào thước phim ảnh tự động phóng to, lướt qua mắt mỗi 5 giây trên nền nhạc du dương và nền tối rạp chiếu.</div>
@@ -2467,7 +2490,7 @@ export default function Book(){
   };
 
   return (
-  <div className={'root'+(edit?' editing':'')} onPointerMove={onMove} onTouchStart={onTS} onTouchEnd={onTE} onPointerDown={()=>{if(!musicPlaying&&bgMusic.url)tryStartMusic()}}>
+  <div className={'root'+(edit?' editing':'')} onPointerMove={onMove} onTouchStart={onTS} onTouchEnd={onTE}>
     <style>{CSS}</style>
     <div className='school-gate-bg' aria-hidden='true'/>
     <Fireflies/>
@@ -2516,7 +2539,19 @@ export default function Book(){
     </div>
     {edit?<div id='tb' className='glass'><button className='btn' onClick={()=>addAfter(here(),'tx')}>＋ 1 trang</button><button className='btn' onClick={()=>addAfter(here(),'vd')}>＋ 1 video</button><button className='btn' onClick={save}>💾 Lưu</button><button className='btn' onClick={logout}>Đăng xuất</button></div>:<button id='lock' className='glass' title='Đăng nhập biên tập' aria-label='Đăng nhập biên tập' onClick={()=>setModal(true)}>🔒</button>}
     {edit&&<div id='tb2' className='glass'><button className='btn' onClick={undo} disabled={!hn} title='Hoàn tác thao tác vừa làm (Ctrl+Z)'>↩ Hoàn tác</button><button className='btn' onClick={restorePrev} title='Lấy lại bản đã lưu trước lần Lưu gần nhất'>⟲ Bản lưu trước</button><button className='btn' onClick={reloadSaved} title='Bỏ các chỉnh sửa chưa lưu'>↺ Bỏ chưa lưu</button><button className='btn' onClick={toDefault} title='Đưa sách về bản mặc định ban đầu'>⟳ Về mặc định</button></div>}
-    <div id='stage'><div id='tilt' ref={tilt}><div id='book' className={(isOpen?'is-open':'')+(isClosedBack?' is-closed-back':'')+(narrow&&half?' is-half':'')} style={{['--k' as any]:k}}>
+    <div
+      id='stage'
+      onClick={e => {
+        const target = e.target as HTMLElement;
+        if (target.id === 'stage' || target.id === 'tilt') {
+          const r = e.currentTarget.getBoundingClientRect();
+          const x = (e.clientX - r.left) / r.width;
+          if (x < 0.5) step(-1);
+          else step(1);
+        }
+      }}
+    >
+      <div id='tilt' ref={tilt}><div id='book' className={(isOpen?'is-open':'')+(isClosedBack?' is-closed-back':'')+(narrow&&half?' is-half':'')} style={{['--k' as any]:k}}>
       {Array.from({length:N+1}).map((_,j)=>{const f=j<cur;const isMv=mv.includes(j);const near=Math.abs(j-cur)<=(narrow?2:3)||isMv;const isLeftActive=(narrow?(half&&j===cur-1):(j===cur-1&&cur>0))&&!isMv;const isRightActive=(narrow?(!half&&j===cur):(j===cur&&cur<N+1))&&!isMv;const zIdx=isMv?200:(f?j+1:(N+1)-j);const isVis=narrow?(isMv||Math.abs(j-cur)<=1||(near&&(half?j<cur:j>=cur))):near;
         if(j===N){
           const endIdx=P.length-1;
@@ -2630,7 +2665,6 @@ export default function Book(){
         type='button'
         className={'mode-switch-btn' + (cinema ? ' cinema-active' : '')}
         onClick={() => {
-          tryStartMusic();
           if (cinema) setCinema(false);
           else startCinema(2 * cur - 1);
         }}
@@ -2682,13 +2716,6 @@ export default function Book(){
       }}
     >
       <div id='yt-bg-audio' />
-      <iframe
-        id='yt-fallback-iframe'
-        src={`https://www.youtube.com/embed/${bgMusic.videoId || PLAYLIST_MAI_TRUONG[0].id}?enablejsapi=1&autoplay=1&mute=1&loop=1&playlist=${bgMusic.videoId || PLAYLIST_MAI_TRUONG[0].id}&origin=${typeof window !== 'undefined' ? encodeURIComponent(window.location.origin) : ''}`}
-        style={{ width: 240, height: 180, border: 0 }}
-        allow='autoplay; encrypted-media; picture-in-picture'
-        title='Background Music'
-      />
     </div>
     {cinema && (
       <CinemaMode

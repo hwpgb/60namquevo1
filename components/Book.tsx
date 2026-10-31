@@ -634,19 +634,15 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         let rot = slot.rot;
         let ar = slot.ar;
         if(src.includes('lop-mama-002')){
-          rot = 0; ar = '3/4';
+          rot = 270;
         }else if(src.includes('lop-12a1-khoa-1998-2001-001')){
-          rot = 0; ar = '3/4';
+          rot = 270;
         }else if(src.includes('lop-12a1-khoa-1998-2001-002')){
-          rot = 90; ar = '4/3';
-        }else if(src.includes('lop-mama-001')){
-          ar = '3/4';
+          rot = 270;
         }else if(src.includes('c4-khoa-1997-2000-008')||src.includes('c4-khoa-1997-2000-009')||src.includes('c4-khoa-1997-2000-013')){
-          rot = 270; ar = '3/4';
+          rot = 270;
         }else if(src.includes('c4-khoa-2004-2007-003')){
           rot = 270;
-        }else if(src.includes('giao-vien-va-nha-truong')){
-          ar = '3/4';
         }
 
         if(p.t==='pr'){

@@ -621,9 +621,6 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         return {...slot,src:cleanSrc};
       });
     }
-        return {...slot,src:cleanSrc};
-      });
-    }
 
     if(p.t==='q'){
       const qFb=getQuoteFallback(p,idx,pages);

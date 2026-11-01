@@ -143,7 +143,7 @@ html.narrow #music-widget{left:76px;top:8px}
 .music-playlist-btn:hover{background:rgba(55,32,10,.95);border-color:#f6e7bd;transform:scale(1.04);color:#fff}
 .music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
 .music-edit-btn:hover{background:rgba(70,45,15,.9);color:#fff;border-color:#f6e7bd}
-#mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:64px;z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+#mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
 .mode-switch-btn{all:unset;cursor:pointer;background:rgba(35,22,8,.88);backdrop-filter:blur(12px);color:#f6e7bd;border:1px solid rgba(201,164,92,.6);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 10px rgba(201,164,92,.25);transition:all .25s ease;white-space:nowrap}
 .mode-switch-btn:hover{background:rgba(60,38,12,.98);border-color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.55), 0 0 18px rgba(201,164,92,.5);transform:scale(1.05)}
 .mode-switch-btn.cinema-active{background:linear-gradient(135deg, #c9a45c, #8f5f1c);color:#fff;border-color:#fff}
@@ -536,10 +536,13 @@ const patchPages=(rawPages:Page[]):Page[]=>{
         // Lớp cô Kim là 12A3 (K31)
         title='Lớp 12A3';
         yrs='Khóa 1997 – 2000 (K31)';
-      }else if(tLower.includes('lớp mama')||tLower.includes('10a9')||tLower.includes('12a9')){
+      }else if(tLower.includes('lớp mama')||(tLower.includes('12a9')&&!tLower.includes('60'))){
         // Lớp Mama là 12A9 (K31)
         title='Lớp 12A9';
         yrs='Khóa 1997 – 2000 (K31)';
+      }else if(tLower.includes('10a9')||yLower.includes('k60')||yLower.includes('khóa 60')){
+        title='Lớp 10A9';
+        yrs='Khóa 60 (2025 – 2028)';
       }else if(tLower.includes('bác mỹ')||(tLower.includes('12a1')&&(yLower.includes('2003')||yLower.includes('2006')))){
         // Lớp bác Mỹ là 12A1 (K37)
         title='Lớp 12A1';
@@ -567,10 +570,17 @@ const patchPages=(rawPages:Page[]):Page[]=>{
       }else if(tLower.includes('2017 – 2020')||yLower.includes('2017 – 2020')){
         // K51 (2017 – 2020)
         if(!yrs||!yrs.includes('K51'))yrs='Khóa 2017 – 2020 (K51)';
-      }else if(tLower.includes('11a1')){
-        if(!yrs)yrs='Khóa 59 (2025 – 2028)';
-      }else if(tLower.includes('11a2')||tLower.includes('11a10')||tLower.includes('11a12')){
-        if(!yrs)yrs='Khóa 59 (2024 – 2027)';
+      }else if(tLower.includes('11a1')||tLower.includes('11a2')||tLower.includes('11a6')||tLower.includes('11a10')||tLower.includes('11a12')){
+        if(!yrs||yrs.includes('2028'))yrs='Khóa 59 (2024 – 2027)';
+      }else if(tLower.includes('10a5')){
+        if(!yrs)yrs='Khóa 60 (2025 – 2028)';
+      }
+    }
+
+    if(p.t==='ph'){
+      if([43, 49, 55, 67, 71, 75].includes(idx+1)){
+        title=undefined;
+        yrs=undefined;
       }
     }
 
@@ -603,14 +613,36 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           newCap='Cựu học sinh Lớp 12A9 K31';
         }else if(src.includes('lop-bac-my')){
           newCap='Cựu học sinh Lớp 12A1 K37';
+        }else if(src.includes('c4-khoa-1997-2000-001')){
+          newCap='Hội ngộ 25 năm Kỷ niệm Ngày ra trường · Lớp 12A3 K31';
+        }else if(src.includes('c4-khoa-1997-2000-002')){
+          newCap='Kỷ niệm 21 năm 10A3 - 12A3 (1997 – 2018)';
+        }else if(src.includes('c4-khoa-1997-2000-003')){
+          newCap='Các nữ sinh 12A3 trong ngày họp mặt kỷ niệm';
+        }else if(src.includes('c4-khoa-1997-2000-004')){
+          newCap='Học sinh trước cổng trường THPT Quế Võ xưa';
+        }else if(src.includes('c4-khoa-1997-2000-005')){
+          newCap='Tập thể lớp trước khu phòng học và hàng phượng vĩ';
+        }else if(src.includes('c4-khoa-1997-2000-006')){
+          newCap='Xếp hình chữ 12A3 trên sân trường';
+        }else if(src.includes('c4-khoa-1997-2000-007')){
+          newCap='Các bạn học sinh trên con đường rợp bóng cây';
+        }else if(src.includes('c4-khoa-1997-2000-008')){
+          newCap='Học sinh bên cổng trường THPT Quế Võ';
+        }else if(src.includes('c4-khoa-1997-2000-009')||src.includes('c4-khoa-1997-2000-010')||src.includes('c4-khoa-1997-2000-011')||src.includes('c4-khoa-1997-2000-012')){
+          newCap='Cựu học sinh Lớp 12A7 K31';
+        }else if(src.includes('c4-khoa-1997-2000-013')){
+          newCap='Kỷ niệm bên thềm lớp học xưa';
+        }else if(src.includes('c4-khoa-1997-2000-014')){
+          newCap='Học sinh rạng rỡ dưới tán phượng vĩ sân trường';
         }else if(src.includes('khoa-1997-2000')){
           newCap='Cựu học sinh Khóa 31 (1997 – 2000)';
         }else if(src.includes('xuan-2003')){
           newCap='Cựu học sinh Khóa 37 · Xuân 2003';
         }else if(src.includes('nam-2004')){
           newCap='Cựu học sinh Khóa 37 · Năm 2004';
-        }else if(src.includes('nam-2006')){
-          newCap='Cựu học sinh Khóa 37 · Năm 2006';
+        }else if(src.includes('c4-khoa-2003-2006-nam-2006')){
+          newCap='Học sinh Khóa 37 · Năm 2006 vui vẻ bên sân trường';
         }else if(src.includes('khoa-2003-2006')){
           newCap='Cựu học sinh Khóa 37 (2003 – 2006)';
         }else if(src.includes('khoa-2004-2007')){
@@ -623,6 +655,12 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           newCap='Cựu học sinh Khóa 18 (1984 – 1985)';
         }else if(src.includes('1993-1994')){
           newCap='Cựu học sinh niên khóa 1993 – 1994';
+        }else if(src.includes('c4-anh-1996-001')){
+          newCap='1 góc sân trường';
+        }else if(src.includes('c4-anh-1996-002')){
+          newCap='Mái trường xưa';
+        }else if(src.includes('c4-anh-1996-003')){
+          newCap='Học sinh dưới tán cây sân trường';
         }else if(src.includes('1996')){
           newCap='Hình ảnh kỷ niệm năm 1996';
         }else if(src.includes('ngay-20-11-2001')||src.includes('20-11-2001')){
@@ -650,7 +688,8 @@ const patchPages=(rawPages:Page[]):Page[]=>{
           return {...slot, src: cleanSrc, cap: prCap, rot, ar: '3/4'};
         }
 
-        if(newCap&&(isBlank||cap.includes('Khóa 37')||cap.includes('Khóa 31')||cap.includes('Lớp 10A3')||cap.includes('Lớp 10A9'))){
+        // Chỉ điền chú thích dự phòng nếu ô chú thích hiện tại bị trống, KHÔNG ghi đè chú thích người dùng đã sửa
+        if(newCap && isBlank){
           return {...slot,src:cleanSrc,cap:newCap,rot,ar};
         }
         return {...slot,src:cleanSrc,rot,ar};
@@ -936,6 +975,7 @@ export default function Book(){
   const ytPlayerRef = useRef<any>(null);
   const ytReadyRef = useRef(false);
   const shouldPlayRef = useRef(false);
+  const lastSwipeTime = useRef(0);
   const userMutedRef = useRef(
     typeof window !== 'undefined' ? localStorage.getItem('60nam_music_muted') === '1' : false
   );
@@ -959,8 +999,7 @@ export default function Book(){
           disablekb: 1,
           fs: 0,
           playsinline: 1,
-          loop: 1,
-          playlist: vid,
+          loop: 0,
           origin: window.location.origin
         },
         events: {
@@ -982,6 +1021,7 @@ export default function Book(){
             } else if (e.data === 2) {
               setMusicPlaying(false);
             } else if (e.data === 0) {
+              // Tự động chuyển sang bài tiếp theo khi bài hiện tại kết thúc
               const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
               if (!isMuted) {
                 playNextTrack();
@@ -1018,6 +1058,36 @@ export default function Book(){
     if ((window as any).YT && (window as any).YT.Player) {
       initYtPlayer();
     }
+
+    // Bắt sự kiện kết thúc bài hát qua tin nhắn postMessage từ iframe YouTube
+    const handleYtMsg = (ev: MessageEvent) => {
+      try {
+        const d = typeof ev.data === 'string' ? JSON.parse(ev.data) : ev.data;
+        if (d && (d.event === 'onStateChange' || d.info === 0) && d.info === 0) {
+          const isMuted = userMutedRef.current || localStorage.getItem('60nam_music_muted') === '1';
+          if (!isMuted) playNextTrack();
+        }
+      } catch (_) {}
+    };
+    window.addEventListener('message', handleYtMsg);
+
+    // Vòng lặp kiểm tra bài hát kết thúc phòng trường hợp sự kiện mạng bị trễ
+    const autoTrackInterval = setInterval(() => {
+      try {
+        if (ytPlayerRef.current && ytReadyRef.current) {
+          const pState = ytPlayerRef.current.getPlayerState ? ytPlayerRef.current.getPlayerState() : -1;
+          const isMuted = userMutedRef.current || localStorage.getItem('60nam_music_muted') === '1';
+          if (pState === 0 && !isMuted) {
+            playNextTrack();
+          }
+        }
+      } catch (_) {}
+    }, 2500);
+
+    return () => {
+      window.removeEventListener('message', handleYtMsg);
+      clearInterval(autoTrackInterval);
+    };
   }, []);
 
   const sendYtAudio = (func: string, args: any[] = []) => {
@@ -1076,6 +1146,8 @@ export default function Book(){
   }, []);
 
   const playNextTrack = () => {
+    const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+    if (isMuted) return;
     setBgMusic(prev => {
       const curId = prev.videoId;
       const idx = PLAYLIST_MAI_TRUONG.findIndex(t => t.id === curId);
@@ -1083,14 +1155,19 @@ export default function Book(){
       const nextTrack = PLAYLIST_MAI_TRUONG[nextIdx];
       if (nextTrack) {
         setTimeout(() => {
-          playTrack(nextTrack);
+          playTrack(nextTrack, false);
         }, 150);
       }
       return prev;
     });
   };
 
-  const playTrack = async (t: PlaylistItem) => {
+  const playTrack = async (t: PlaylistItem, isUserExplicit = true) => {
+    const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
+    if (!isUserExplicit && isMuted) {
+      setBgMusic({ url: t.url, videoId: t.id, title: `${t.title} · ${t.artist}` });
+      return;
+    }
     userMutedRef.current = false;
     try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
     shouldPlayRef.current = true;
@@ -1135,9 +1212,13 @@ export default function Book(){
       try { localStorage.setItem('60nam_music_muted', '1'); } catch (_) {}
       shouldPlayRef.current = false;
       if (ytPlayerRef.current && ytPlayerRef.current.pauseVideo) {
-        try { ytPlayerRef.current.pauseVideo(); } catch (_) {}
+        try {
+          ytPlayerRef.current.pauseVideo();
+          ytPlayerRef.current.mute();
+        } catch (_) {}
       }
       sendYtAudio('pauseVideo');
+      sendYtAudio('mute');
       setMusicPlaying(false);
       toast('Đã tắt nhạc nền');
     } else {
@@ -1466,21 +1547,30 @@ export default function Book(){
     setMenu(null);
     setMv(m);setCur(c);setHalf(h);
     if(tilt.current)tilt.current.style.transform='none';
-    setTimeout(()=>setMv([]),1400);
+    setTimeout(()=>setMv([]),narrow?600:1400);
   };
   const go=(n:number)=>{
     n=Math.max(0,Math.min(maxCur,n));
-    if(narrow){const pg=n===0?0:2*n-1;flip(Math.ceil(pg/2),pg%2===1)}else flip(n,false);
+    if(narrow){
+      const pg=n===0?0:2*n-1;
+      goPage(pg);
+    }else flip(n,false);
   };
   const goPage=(pg:number)=>{
     if(!narrow){go(Math.ceil(pg/2));return}
     pg=Math.max(0,Math.min(2*maxCur-1,pg));
-    flip(Math.ceil(pg/2),pg%2===1);
+    if (pg === 0) {
+      flip(0, false);
+    } else if (pg % 2 === 1) {
+      flip(Math.floor(pg / 2) + 1, true);
+    } else {
+      flip(pg / 2, false);
+    }
   };
   const step=(d:number)=>{
     if(!narrow){go(cur+d);return}
-    const now=2*cur-(half?1:0);
-    goPage(now+d);
+    const curPg = cur === 0 ? 0 : (half ? 2 * cur - 1 : 2 * cur);
+    goPage(curPg+d);
   };
   const logoClick=()=>{if(lgMode!=='corner')return;setToc(false);setLb(null);go(0);setIntro(true)};
   const onTS=(e:React.TouchEvent)=>{const t=e.touches[0];tx0.current={x:t.clientX,y:t.clientY}};
@@ -1491,6 +1581,7 @@ export default function Book(){
     if(Math.abs(dx)>50&&Math.abs(dx)>Math.abs(dy)*1.5){
       if((e.target as HTMLElement).closest('[contenteditable=true]'))return;
       if(edit)return;
+      lastSwipeTime.current = Date.now();
       step(dx<0?1:-1);
     }
   };
@@ -2061,6 +2152,10 @@ export default function Book(){
     toast('Đã dọn dẹp các trang trống — nhớ bấm 💾 Lưu!');
   };
   const save=async()=>{
+    if (typeof document !== 'undefined' && document.activeElement && (document.activeElement as HTMLElement).blur) {
+      (document.activeElement as HTMLElement).blur();
+    }
+    await new Promise(r => setTimeout(r, 60));
     const toSave=Pref.current;
     try{
       localStorage.setItem('60nam_book_saved',JSON.stringify({pages:toSave,bgMusic,updated:Date.now()}));
@@ -2189,23 +2284,23 @@ export default function Book(){
     raf.current=requestAnimationFrame(()=>{raf.current=0;if(tilt.current)tilt.current.style.transform=`rotateX(${(.5-y)*4}deg) rotateY(${(x-.5)*5}deg)`});
   };
   const faceClick=(side:string)=>(e:React.MouseEvent<HTMLDivElement>)=>{
+    if (Date.now() - lastSwipeTime.current < 400) return;
     const target=e.target as HTMLElement;
     if(edit){
       if(target.closest('[contenteditable=true], button, a, input, textarea, select, .choice-card, .choice-btn, .editable-txt-box, .slbar, .drag-handle-corner, figure, .crest-frame, .rotbtn')) return;
     } else {
-      if(target.closest('button, a, input, textarea, select, .choice-card, .choice-btn, .slbar, .drag-handle-corner, .rotbtn')) return;
+      if(target.closest('button, a, input, textarea, select, .choice-card, .choice-btn, .slbar, .drag-handle-corner, .rotbtn, .crest-frame')) return;
     }
     setMenu(null);
+    const isLeft = e.clientX < window.innerWidth / 2;
     if(narrow){
-      const r=e.currentTarget.getBoundingClientRect();const x=(e.clientX-r.left)/r.width;
-      if(x>=0.5) step(1);
-      else step(-1);
+      if(isLeft) step(-1);
+      else step(1);
       return;
     }
     if(cur===0){go(1);return}
     if(cur===maxCur){go(cur-1);return}
-    if(side==='front') go(cur+1);
-    else if(side==='back') go(cur-1);
+    step(isLeft ? -1 : 1);
   };
 
   const slotsEl=(p:Page,i:number,cls:string)=>{
@@ -2769,12 +2864,12 @@ export default function Book(){
     <div
       id='stage'
       onClick={e => {
+        if (Date.now() - lastSwipeTime.current < 400) return;
         const target = e.target as HTMLElement;
-        if (target.id === 'stage' || target.id === 'tilt') {
-          const r = e.currentTarget.getBoundingClientRect();
-          const x = (e.clientX - r.left) / r.width;
-          if (x < 0.5) step(-1);
-          else step(1);
+        if (target.closest('button, a, input, textarea, select, #dock, #tb, #tb2, #top, #lock, #mode-bar, #modal, #lb, .choice-card, .choice-btn, .slbar, .cap-tools, [contenteditable=true]')) return;
+        if (target.id === 'stage' || target.id === 'tilt' || target.id === 'book') {
+          const isLeft = e.clientX < window.innerWidth / 2;
+          step(isLeft ? -1 : 1);
         }
       }}
     >

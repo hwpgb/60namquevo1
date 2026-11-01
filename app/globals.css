@@ -312,7 +312,7 @@ html.narrow .end-school-page h2{font-size:22px;font-weight:800}
 html.narrow .end-school-page .end-yrs{font-size:16px}
 html.narrow .end-school-page .end-motto{font-size:13px;font-weight:700}
 html.narrow .slot figcaption,html.narrow .vslot figcaption{font-size:17px;font-weight:700}
-html.narrow #mode-bar{bottom:calc(74px + env(safe-area-inset-bottom,0px)) !important}
+html.narrow #mode-bar{bottom:calc(84px + env(safe-area-inset-bottom,0px)) !important}
 html.narrow #dock{bottom:calc(10px + env(safe-area-inset-bottom,0px)) !important}
 html.narrow .leaf{transition:transform 0.55s cubic-bezier(.4, 0, .2, 1) !important}
 html.narrow #book{transition:transform 0.55s cubic-bezier(.4, 0, .2, 1) !important}

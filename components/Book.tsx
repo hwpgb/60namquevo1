@@ -143,8 +143,11 @@ html.narrow #music-widget{left:76px;top:8px}
 .music-playlist-btn:hover{background:rgba(55,32,10,.95);border-color:#f6e7bd;transform:scale(1.04);color:#fff}
 .music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
 .music-edit-btn:hover{background:rgba(70,45,15,.9);color:#fff;border-color:#f6e7bd}
-#mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
-html.narrow #mode-bar{bottom:calc(112px + env(safe-area-inset-bottom,0px)) !important}
+.slot.pr figcaption{display:flex!important;flex-direction:column!important;justify-content:center!important;align-items:center!important;padding:4px 2px 2px!important;min-height:38px!important;line-height:1.25!important}
+.slot.pr figcaption .pr-name{display:block!important;font-weight:700!important;font-size:clamp(13px,calc(var(--w) * 0.035),17px)!important;color:#1e0f04!important;white-space:nowrap!important;text-align:center!important;line-height:1.25!important}
+.slot.pr figcaption .pr-years{display:block!important;font-weight:600!important;font-size:clamp(10.5px,calc(var(--w) * 0.028),14px)!important;color:#5a3c20!important;opacity:.95!important;margin-top:2px!important;white-space:nowrap!important;text-align:center!important;line-height:1.2!important}
+#mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(82px + env(safe-area-inset-bottom,0px)) !important;z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+html.narrow #mode-bar{bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important}
 .mode-switch-btn{all:unset;cursor:pointer;background:rgba(35,22,8,.88);backdrop-filter:blur(12px);color:#f6e7bd;border:1px solid rgba(201,164,92,.6);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 10px rgba(201,164,92,.25);transition:all .25s ease;white-space:nowrap}
 .mode-switch-btn:hover{background:rgba(60,38,12,.98);border-color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.55), 0 0 18px rgba(201,164,92,.5);transform:scale(1.05)}
 .mode-switch-btn.cinema-active{background:linear-gradient(135deg, #c9a45c, #8f5f1c);color:#fff;border-color:#fff}
@@ -2334,7 +2337,8 @@ export default function Book(){
       }
       return null;
     }
-    const isPr = p.t === 'pr' || cls.includes('pr');
+    const isPr = p.t === 'pr' || cls.includes('pr') || i === 11 || i === 12 || p.kind === 'principals';
+    const prCls = isPr && !cls.includes('pr') ? ' pr' : '';
     const isStack2 = n === 2 && !isPr;
     return <div className={'grid' + (n > 4 ? ' g3' : '') + (n === 1 ? ' n1' : '') + (n === 2 ? ' n2' + (isStack2 ? ' stack' : '') : '') + (n === 3 ? ' n3' : '')}>{slotsToRender.map(({ s, k }, renderIdx) => {
       const rot = s.rot || 0, z = zoomOf(s);
@@ -2364,7 +2368,7 @@ export default function Book(){
       return (
         <div className={'cell' + (isWideSpan ? ' wide' : '')} key={k} onClick={edit ? (e => e.stopPropagation()) : undefined}>
           <figure
-            className={'slot' + cls + tapeCls}
+            className={'slot' + cls + prCls + tapeCls}
             style={slotStyle}
             data-slot-k={k}
             draggable={edit}
@@ -2444,9 +2448,18 @@ export default function Book(){
               >
                 {isPr && s.cap ? (
                   (() => {
-                    const parts = s.cap.includes('\n') ? s.cap.split('\n') : s.cap.split(' · ');
-                    const name = parts[0]?.trim();
-                    const yrs = parts.slice(1).join(' · ').trim();
+                    let name = s.cap, yrs = '';
+                    const match = s.cap.match(/^(.*?)(?:[\n·|]|\s+(?=\d{4}\s*[–-]))\s*(.*)$/);
+                    if (match && match[2]) {
+                      name = match[1].trim();
+                      yrs = match[2].trim().replace(/^[·\-\s]+|[·\-\s]+$/g, '');
+                    } else {
+                      const parts = s.cap.includes('\n') ? s.cap.split('\n') : s.cap.split(' · ');
+                      name = parts[0]?.trim();
+                      yrs = parts.slice(1).join(' · ').trim();
+                    }
+
+
                     return (
                       <>
                         <span className='pr-name'>{name}</span>
@@ -2852,7 +2865,10 @@ export default function Book(){
         onClick={() => setPlaylistModal(true)}
         title='Xem & chọn bài hát trong Tuyển Tập Nhạc Mái Trường'
       >
-        Tuyển tập ({PLAYLIST_MAI_TRUONG.length})
+        <svg width='12' height='12' viewBox='0 0 24 24' fill='currentColor' style={{ opacity: 0.85, flexShrink: 0 }} aria-hidden='true'>
+          <path d='M3 6h18v2H3V6zm0 5h18v2H3v-2zm0 5h12v2H3v-2zm14-1v6l5-3-5-3z'/>
+        </svg>
+        <span>Tuyển tập ({PLAYLIST_MAI_TRUONG.length})</span>
       </button>
       {edit && (
         <button

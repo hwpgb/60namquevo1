@@ -1,6 +1,6 @@
 import { put, list } from '@vercel/blob';
 import { NextResponse } from 'next/server';
-import { defaultPages } from '@/lib/data';
+import { defaultPages } from '../../lib/data';
 
 export const dynamic = 'force-dynamic';
 

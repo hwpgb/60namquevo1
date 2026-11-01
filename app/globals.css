@@ -134,7 +134,11 @@ h1,h2,h3,.t-cover h1,.t-cover h2,.open h2,.tx h2,.endp .t1,.end-school-page h2,.
 .open .txt, .open .txt p{font:500 clamp(15px,calc(var(--w) * 0.038),20px)/1.75 'Lora',serif !important;color:#2c1b0c !important;border-left:3.5px solid var(--gold);padding-left:1.1em;white-space:pre-wrap;max-height:55%;overflow-y:auto}
 .tx{display:flex;flex-direction:column;flex:1;min-height:0}
 .tx h2, .tx .txt-title h2{font-family:'Playfair Display',serif !important;font-size:clamp(24px,calc(var(--w) * 0.082),42px) !important;margin-bottom:.45em !important;color:var(--gold) !important;font-weight:800 !important;letter-spacing:.02em !important;line-height:1.25 !important}
-.tx .body, .tx .body div{font:500 clamp(14.5px,calc(var(--w) * 0.036),19.5px)/1.8 'Lora',serif !important;color:#271609 !important;white-space:pre-wrap;flex:1;overflow-y:auto;min-height:0}
+.tx .body, .tx .body div{font:500 clamp(14.5px,calc(var(--w) * 0.036),19.5px)/1.8 'Lora',serif !important;color:#271609 !important;white-space:pre-wrap;flex:0 1 auto;overflow-y:auto;min-height:0}
+.tx-slots-wrap{flex:none;margin-top:auto;padding-top:8px;width:100%}
+.tx-slots-wrap .grid{margin-bottom:0}
+.tx-slots-wrap .grid.n1 .slot{max-height:clamp(200px,36vh,320px)}
+.tx-slots-wrap .grid.n1 .slot .ph{max-height:clamp(170px,30vh,260px);min-height:140px}
 .tx.center{justify-content:center;text-align:center}
 .tx.center .body{flex:0 1 auto;font:italic 600 clamp(16px,calc(var(--w) * 0.042),22px)/1.8 'Lora',serif;color:#221206}
 .endp{flex:1;min-height:0;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:4% 6%;position:relative}
@@ -312,7 +316,7 @@ html.narrow .end-school-page h2{font-size:22px;font-weight:800}
 html.narrow .end-school-page .end-yrs{font-size:16px}
 html.narrow .end-school-page .end-motto{font-size:13px;font-weight:700}
 html.narrow .slot figcaption,html.narrow .vslot figcaption{font-size:17px;font-weight:700}
-html.narrow #mode-bar{bottom:calc(84px + env(safe-area-inset-bottom,0px)) !important}
+html.narrow #mode-bar{bottom:calc(112px + env(safe-area-inset-bottom,0px)) !important}
 html.narrow #dock{bottom:calc(10px + env(safe-area-inset-bottom,0px)) !important}
 html.narrow .leaf{transition:transform 0.55s cubic-bezier(.4, 0, .2, 1) !important}
 html.narrow #book{transition:transform 0.55s cubic-bezier(.4, 0, .2, 1) !important}

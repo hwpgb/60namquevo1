@@ -144,6 +144,7 @@ html.narrow #music-widget{left:76px;top:8px}
 .music-edit-btn{all:unset;cursor:pointer;background:rgba(40,25,8,.75);color:#d4af37;border:1px solid rgba(201,164,92,.3);border-radius:999px;padding:5px 10px;font-size:11.5px;font-weight:600;transition:all .25s;white-space:nowrap}
 .music-edit-btn:hover{background:rgba(70,45,15,.9);color:#fff;border-color:#f6e7bd}
 #mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(76px + env(safe-area-inset-bottom,0px));z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
+html.narrow #mode-bar{bottom:calc(112px + env(safe-area-inset-bottom,0px)) !important}
 .mode-switch-btn{all:unset;cursor:pointer;background:rgba(35,22,8,.88);backdrop-filter:blur(12px);color:#f6e7bd;border:1px solid rgba(201,164,92,.6);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 10px rgba(201,164,92,.25);transition:all .25s ease;white-space:nowrap}
 .mode-switch-btn:hover{background:rgba(60,38,12,.98);border-color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.55), 0 0 18px rgba(201,164,92,.5);transform:scale(1.05)}
 .mode-switch-btn.cinema-active{background:linear-gradient(135deg, #c9a45c, #8f5f1c);color:#fff;border-color:#fff}
@@ -979,6 +980,7 @@ export default function Book(){
   const userMutedRef = useRef(
     typeof window !== 'undefined' ? localStorage.getItem('60nam_music_muted') === '1' : false
   );
+  const musicPlayingRef = useRef(false);
 
   const initYtPlayer = () => {
     if (typeof window === 'undefined' || !(window as any).YT || !(window as any).YT.Player) return;
@@ -994,13 +996,13 @@ export default function Book(){
         videoId: vid,
         playerVars: {
           autoplay: 1,
-          mute: 1,
+          mute: 0,
           controls: 0,
           disablekb: 1,
           fs: 0,
           playsinline: 1,
           loop: 0,
-          origin: window.location.origin
+          origin: typeof window !== 'undefined' ? window.location.origin : ''
         },
         events: {
           onReady: (e: any) => {
@@ -1011,14 +1013,17 @@ export default function Book(){
                 e.target.unMute();
                 e.target.setVolume(100);
                 e.target.playVideo();
+                musicPlayingRef.current = true;
                 setMusicPlaying(true);
               } catch (_) {}
             }
           },
           onStateChange: (e: any) => {
             if (e.data === 1) {
+              musicPlayingRef.current = true;
               setMusicPlaying(true);
             } else if (e.data === 2) {
+              musicPlayingRef.current = false;
               setMusicPlaying(false);
             } else if (e.data === 0) {
               // Tự động chuyển sang bài tiếp theo khi bài hiện tại kết thúc
@@ -1114,6 +1119,7 @@ export default function Book(){
         ytPlayerRef.current.unMute();
         ytPlayerRef.current.setVolume(100);
         ytPlayerRef.current.playVideo();
+        musicPlayingRef.current = true;
         setMusicPlaying(true);
       } catch (_) {}
     } else {
@@ -1121,27 +1127,27 @@ export default function Book(){
       sendYtAudio('unMute');
       sendYtAudio('setVolume', [100]);
       sendYtAudio('playVideo');
+      musicPlayingRef.current = true;
       setMusicPlaying(true);
     }
   };
 
   useEffect(() => {
-    const onFirstInteraction = () => {
+    const onUserInteraction = () => {
       const isMuted = userMutedRef.current || (typeof window !== 'undefined' && localStorage.getItem('60nam_music_muted') === '1');
-      if (!isMuted) {
+      if (!isMuted && !musicPlayingRef.current) {
         tryStartMusic();
       }
-      window.removeEventListener('pointerdown', onFirstInteraction);
-      window.removeEventListener('keydown', onFirstInteraction);
-      window.removeEventListener('touchstart', onFirstInteraction);
     };
-    window.addEventListener('pointerdown', onFirstInteraction, { passive: true });
-    window.addEventListener('keydown', onFirstInteraction, { passive: true });
-    window.addEventListener('touchstart', onFirstInteraction, { passive: true });
+    window.addEventListener('pointerdown', onUserInteraction, { passive: true });
+    window.addEventListener('keydown', onUserInteraction, { passive: true });
+    window.addEventListener('touchstart', onUserInteraction, { passive: true });
+    window.addEventListener('click', onUserInteraction, { passive: true });
     return () => {
-      window.removeEventListener('pointerdown', onFirstInteraction);
-      window.removeEventListener('keydown', onFirstInteraction);
-      window.removeEventListener('touchstart', onFirstInteraction);
+      window.removeEventListener('pointerdown', onUserInteraction);
+      window.removeEventListener('keydown', onUserInteraction);
+      window.removeEventListener('touchstart', onUserInteraction);
+      window.removeEventListener('click', onUserInteraction);
     };
   }, []);
 
@@ -1209,6 +1215,7 @@ export default function Book(){
   const toggleMusic = () => {
     if (musicPlaying) {
       userMutedRef.current = true;
+      musicPlayingRef.current = false;
       try { localStorage.setItem('60nam_music_muted', '1'); } catch (_) {}
       shouldPlayRef.current = false;
       if (ytPlayerRef.current && ytPlayerRef.current.pauseVideo) {
@@ -1223,6 +1230,7 @@ export default function Book(){
       toast('Đã tắt nhạc nền');
     } else {
       userMutedRef.current = false;
+      musicPlayingRef.current = true;
       try { localStorage.setItem('60nam_music_muted', '0'); } catch (_) {}
       tryStartMusic(true);
       toast(`Đang phát: ${bgMusic.title || 'Nhạc mái trường'}`);
@@ -1817,7 +1825,7 @@ export default function Book(){
       targetSlots.push(movingSlot);
     }
 
-    const newToType = (toP.t === 'tx' || toP.t === 'q' || toP.t === 'vd' || toP.t === 'vd1') ? 'ph' : toP.t;
+    const newToType = (toP.t === 'q' || toP.t === 'vd' || toP.t === 'vd1') ? 'ph' : toP.t;
     const next = curPages.map((p, idx) => {
       if (idx === fromI) return { ...p, s: newSrcSlots };
       if (idx === toI) return { ...p, t: newToType, s: targetSlots };
@@ -2089,7 +2097,7 @@ export default function Book(){
     const max=p.t==='pr'?6:9;
     if(curSlots.length>=max){toast('Mỗi trang tối đa '+max+' khung ảnh');return}
     const cap=p.t==='pr'?'Họ và tên · Nhiệm kỳ':'Chú thích ký ức…';
-    setP(P.map((q,j)=>j===i?{...q,t:(q.t==='tx'||q.t==='q'?'ph':q.t),s:[...curSlots,{src:'',cap}]}:q));
+    setP(P.map((q,j)=>j===i?{...q,t:(q.t==='q'?'ph':q.t),s:[...curSlots,{src:'',cap}]}:q));
     toast('Đã thêm 1 khung ảnh — nhớ bấm 💾 Lưu');
   };
   const delSlot=(i:number,k:number)=>{
@@ -2509,7 +2517,7 @@ export default function Book(){
         <button onClick={act(()=>{
           pick.current={p:i,s:(p.s&&p.s.length>0)?p.s.length:0};
           if(!p.s||p.s.length===0){
-            setP(P.map((q,j)=>j===i?{...q,t:(q.t==='tx'||q.t==='q'?'ph':q.t),s:[{src:'',cap:'Chú thích ký ức…'}]}:q));
+            setP(P.map((q,j)=>j===i?{...q,t:(q.t==='q'?'ph':q.t),s:[{src:'',cap:'Chú thích ký ức…'}]}:q));
           }
           setTimeout(()=>fi.current?.click(),80);
         })}>📷 Tải ảnh từ máy lên trang này</button>
@@ -2727,12 +2735,30 @@ export default function Book(){
     if(p.t==='tx'){
       const txtVal=(p.txt!==undefined&&p.txt!=='')?p.txt:(getHistoryFallback(p.title,i)||'');
       const isVideo=p.kind==='video'||p.title?.toLowerCase().includes('video');
+      const hasSlots = p.s && p.s.length > 0;
       return (
         <>
           <div className='tx'>
             {isVideo&&<div style={{fontSize:12,fontWeight:700,letterSpacing:2,color:'#8b5a1b',opacity:0.8,marginBottom:4}}>TƯ LIỆU HÌNH ẢNH & PHÓNG SỰ</div>}
             <TxtBox i={i} field='title' label='Tiêu đề' tag='h2' className='txt-title' dataPh='Tiêu đề…'>{p.title}</TxtBox>
             <TxtBox i={i} field='txt' label='Nội dung' className='body' dataPh='Nội dung bài viết / Dán link video…'>{edit?txtVal:renderClickableText(txtVal)}</TxtBox>
+            {hasSlots && (
+              <div className='tx-slots-wrap'>
+                {slotsEl(p, i, '')}
+              </div>
+            )}
+            {edit && !hasSlots && (
+              <div style={{ marginTop: 'auto', paddingTop: 14, textAlign: 'center' }}>
+                <button
+                  type='button'
+                  className='empty-page-add-slot'
+                  onClick={() => addSlot(i)}
+                  style={{ display: 'inline-flex', padding: '8px 16px', fontSize: 13 }}
+                >
+                  📷 Thêm khung ảnh vào trang chữ này
+                </button>
+              </div>
+            )}
           </div>
           {doodle}{noteEl(i,p)}{ft}
         </>
@@ -3020,7 +3046,7 @@ export default function Book(){
     <div id='modal' className={modal?'on':''}><div className='card glass'><h3>Đăng nhập biên tập</h3><input placeholder='Email / Tài khoản' value={u} onChange={e=>setU(e.target.value)} autoComplete='username'/><input type='password' placeholder='Mật khẩu' value={pw} onChange={e=>setPw(e.target.value)} autoComplete='current-password' onKeyDown={e=>{if(e.key==='Enter')login()}}/><div className='err'>{err}</div><button className='btn go' onClick={login}>Đăng nhập</button><button className='btn' style={{textAlign:'center'}} onClick={()=>setModal(false)}>Đóng</button></div></div>
     <div id='lb' className={lb?'on':''} onClick={()=>setLb(null)}>{lb&&<figure onClick={e=>e.stopPropagation()}>{lb.v==='yt'?<iframe src={`https://www.youtube.com/embed/${lb.src}?autoplay=1&rel=0`} allow='autoplay; encrypted-media; fullscreen' allowFullScreen/>:lb.v==='file'?<video src={lb.src} controls autoPlay playsInline/>:<img src={lb.src} alt={lb.cap} style={lb.rot?{transform:`rotate(${lb.rot}deg)`,...(lb.rot%180!==0?{maxWidth:'78vh',maxHeight:'88vw'}:{})}:undefined}/>}<figcaption>{lb.cap}</figcaption></figure>}</div>
     <div id='logo60' className={lgMode==='corner'?'corner':''} onClick={logoClick} title={lgMode==='corner'?'Về trang bìa':undefined} style={{left:lg.x,top:lg.y,width:lg.s,height:lg.s,opacity:(intro||!lgReady)?0:1,pointerEvents:(lgMode==='corner'&&!intro)?'auto':'none',transition:lgAnim?undefined:'none'}}>{logoOk?<img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false} onError={()=>setLogoOk(false)}/>:<span className='lgtxt'>60</span>}</div>
-    <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{tryStartMusic();setIntro(false);setTimeout(()=>go(1),500)}}>Mở cuốn sách ký ức</button></div></div>
+    <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{tryStartMusic(true);setIntro(false);go(0);}}>Mở cuốn sách ký ức</button></div></div>
     {/* Hidden background YouTube audio player */}
     <div
       id='yt-bg-player-wrap'
@@ -3029,11 +3055,11 @@ export default function Book(){
         position: 'fixed',
         bottom: 0,
         right: 0,
-        width: 240,
-        height: 180,
-        opacity: 0.001,
+        width: 200,
+        height: 200,
+        opacity: 0.02,
         pointerEvents: 'none',
-        zIndex: -1,
+        zIndex: 1,
         overflow: 'hidden'
       }}
     >

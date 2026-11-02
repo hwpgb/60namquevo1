@@ -2831,6 +2831,9 @@ export default function Book(){
   }
   const isOpen=cur>0&&cur<=N;
   const isClosedBack=cur===maxCur;
+  const isAtRest=mv.length===0;
+  const isRestClosedFront=cur===0&&isAtRest;
+  const isRestClosedBack=cur===maxCur&&isAtRest;
   const k=narrow?(half?1:0):(cur===0?0:cur===maxCur?1:.5);
   const canPrev=narrow?(cur>0||half):(cur>0);
   const canNext=narrow?(cur<maxCur||!half):(cur<maxCur);
@@ -2927,8 +2930,19 @@ export default function Book(){
         }
       }}
     >
-      <div id='tilt' ref={tilt}><div id='book' className={(isOpen?'is-open':'')+(isClosedBack?' is-closed-back':'')+(narrow&&half?' is-half':'')} style={{['--k' as any]:k}}>
-      {Array.from({length:N+1}).map((_,j)=>{const f=j<cur;const isMv=mv.includes(j);const near=Math.abs(j-cur)<=(narrow?2:3)||isMv;const isLeftActive=(narrow?(half&&j===cur-1):(j===cur-1&&cur>0))&&!isMv;const isRightActive=(narrow?(!half&&j===cur):(j===cur&&cur<N+1))&&!isMv;const zIdx=isMv?200:(f?j+1:(N+1)-j);const isVis=narrow?(isMv||Math.abs(j-cur)<=1||(near&&(half?j<cur:j>=cur))):near;
+      <div id='tilt' ref={tilt}><div id='book' className={(isOpen?'is-open':'')+(isClosedBack?' is-closed-back':'')+(isRestClosedFront?' is-rest-closed':'')+(isRestClosedBack?' is-rest-closed-back':'')+(narrow&&half?' is-half':'')} style={{['--k' as any]:k}}>
+      {Array.from({length:N+1}).map((_,j)=>{
+        const f=j<cur;
+        const isMv=mv.includes(j);
+        const minMv=mv.length>0?Math.min(...mv):-1;
+        const maxMv=mv.length>0?Math.max(...mv):-1;
+        const near=Math.abs(j-cur)<=(narrow?1:2)||isMv;
+        const isLeftActive=(narrow?(half&&j===cur-1):(j===cur-1&&cur>0))&&!isMv;
+        const isRightActive=(narrow?(!half&&j===cur):(j===cur&&cur<N+1))&&!isMv;
+        const zIdx=isMv?200:(f?j+1:(N+1)-j);
+        const isVis=isAtRest
+          ? (cur===0?j===0:(cur>=maxCur?j===N:(narrow?(half?j===cur-1:j===cur):(j===cur-1||j===cur))))
+          : (isMv||(narrow?(half?j===cur-1:j===cur):(j===cur-1||j===cur))||(minMv>=0&&(j===minMv-1||j===maxMv+1))||(cur===0?j===1:(cur>=maxCur?j===N-1:false)));
         if(j===N){
           const endIdx=P.length-1;
           const endP=P[endIdx]||{} as any;

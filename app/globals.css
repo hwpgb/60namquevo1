@@ -89,6 +89,14 @@ canvas#ff{position:fixed;inset:0;pointer-events:none;z-index:52}
   display:none !important;
 }
 
+/* Triệt tiêu hoàn toàn Z-fighting 3D khi sách đang đóng bìa */
+#book.is-rest-closed .leaf:not(:first-child){
+  display:none !important;
+}
+#book.is-rest-closed-back .leaf:not(:last-child){
+  display:none !important;
+}
+
 /* Khi sách gập lại ở trang bìa sau (closed back cover) */
 #book.is-closed-back::before{
   background:transparent;

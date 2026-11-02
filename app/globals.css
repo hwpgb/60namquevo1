@@ -333,4 +333,4 @@ html.narrow .txt-tools button{font-size:10px;padding:1px 4px}
 .cover-emblem-badge img{width:72% !important;height:72% !important;aspect-ratio:1/1 !important;object-fit:contain !important;display:block !important}
 html.narrow .cover-emblem-badge{width:min(calc(var(--ls) * 0.88), 115px) !important;height:min(calc(var(--ls) * 0.88), 115px) !important;margin-bottom:4% !important}
 
-html.narrow #logo60{transition:opacity .3s ease !important;left:10px !important;top:10px !important;width:46px !important;height:46px !important}
+html.narrow #logo60{left:10px !important;top:10px !important;width:46px !important;height:46px !important;transition:opacity .35s ease !important}

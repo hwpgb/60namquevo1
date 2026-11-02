@@ -334,3 +334,6 @@ html.narrow .txt-tools button{font-size:10px;padding:1px 4px}
 html.narrow .cover-emblem-badge{width:min(calc(var(--ls) * 0.88), 115px) !important;height:min(calc(var(--ls) * 0.88), 115px) !important;margin-bottom:4% !important}
 
 html.narrow #logo60{left:10px !important;top:10px !important;width:46px !important;height:46px !important;transition:opacity .35s ease !important}
+
+.music-btn .music-label{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+html.narrow .music-btn .music-label{max-width:75px}

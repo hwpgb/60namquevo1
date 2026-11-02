@@ -133,6 +133,8 @@ html.narrow #music-widget{left:76px;top:8px}
 .music-btn.needs-click{animation:music-pulse 2s infinite}
 @keyframes music-pulse{0%,100%{box-shadow:0 0 0 rgba(212,175,55,0);border-color:rgba(201,164,92,.45)}50%{box-shadow:0 0 12px rgba(212,175,55,.6);border-color:#f6e7bd}}
 .music-btn .music-icon{font-size:13px}
+.music-btn .music-label{max-width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;display:inline-block;vertical-align:middle}
+html.narrow .music-btn .music-label{max-width:75px}
 .eq-bars{display:inline-flex;align-items:flex-end;gap:2px;height:12px}
 .eq-bar{width:3px;background:#f6e7bd;border-radius:1px;animation:eq-anim .8s ease-in-out infinite alternate}
 .eq-b1{height:5px;animation-delay:0s}
@@ -3034,19 +3036,21 @@ export default function Book(){
           </div>
         </div>)})}
     </div></div></div>
-    <div id='mode-bar'>
-      <button
-        type='button'
-        className={'mode-switch-btn' + (cinema ? ' cinema-active' : '')}
-        onClick={() => {
-          if (cinema) setCinema(false);
-          else startCinema(2 * cur - 1);
-        }}
-        title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 3s)'}
-      >
-        {cinema ? 'Xem lật trang' : 'Chế độ xem phim'}
-      </button>
-    </div>
+    {cur > 0 && cur < maxCur && (
+      <div id='mode-bar'>
+        <button
+          type='button'
+          className={'mode-switch-btn' + (cinema ? ' cinema-active' : '')}
+          onClick={() => {
+            if (cinema) setCinema(false);
+            else startCinema(2 * cur - 1);
+          }}
+          title={cinema ? 'Quay về xem lật trang' : 'Bật chế độ xem phim tự động (mỗi ảnh 3s)'}
+        >
+          {cinema ? 'Xem lật trang' : 'Chế độ xem phim'}
+        </button>
+      </div>
+    )}
     <div id='dock' className='glass'>
       <button onClick={()=>step(-1)} disabled={!canPrev} style={{opacity:canPrev?1:0.3,cursor:canPrev?'pointer':'default'}} title={canPrev?'Trang trước':'Đã ở bìa trước'}>‹</button>
       <button className={toc?'on':''} onClick={()=>setToc(true)}>☰ Mục lục</button>

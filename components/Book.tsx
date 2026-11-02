@@ -114,7 +114,7 @@ html.narrow .pnote{font-size:13.5px}
 #tb2{position:fixed;left:50%;transform:translateX(-50%);bottom:84px;z-index:45;display:flex;gap:6px;padding:6px 8px;border-radius:999px;flex-wrap:wrap;justify-content:center;max-width:94vw}
 #tb2 .btn{width:auto;display:inline-flex;margin:0;font-size:12px;padding:6px 10px;white-space:nowrap}
 #tb2 .btn:disabled{opacity:.4;cursor:default}
-html.narrow #dock button{min-height:44px}
+html.narrow #dock button{height:32px !important;min-height:32px !important;max-height:32px !important;line-height:32px !important;padding:4px 12px !important}
 html.narrow .ph{cursor:pointer}
 .empty-page-add-slot{margin:auto;padding:14px 22px;border:2px dashed rgba(143,95,28,.45);border-radius:12px;background:rgba(255,253,245,.75);color:var(--gold);font-size:13.5px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:8px;box-shadow:0 4px 12px rgba(50,30,10,.08);transition:all .25s}
 .empty-page-add-slot:hover{background:rgba(255,253,245,.98);border-color:var(--gold);transform:scale(1.03)}
@@ -147,7 +147,7 @@ html.narrow #music-widget{left:76px;top:8px}
 .slot.pr figcaption .pr-name{display:block!important;font-weight:700!important;font-size:clamp(13px,calc(var(--w) * 0.035),17px)!important;color:#1e0f04!important;white-space:nowrap!important;text-align:center!important;line-height:1.25!important}
 .slot.pr figcaption .pr-years{display:block!important;font-weight:600!important;font-size:clamp(10.5px,calc(var(--w) * 0.028),14px)!important;color:#5a3c20!important;opacity:.95!important;margin-top:2px!important;white-space:nowrap!important;text-align:center!important;line-height:1.2!important}
 #mode-bar{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(82px + env(safe-area-inset-bottom,0px)) !important;z-index:42;display:flex;align-items:center;justify-content:center;pointer-events:auto}
-html.narrow #mode-bar{bottom:calc(120px + env(safe-area-inset-bottom,0px)) !important}
+html.narrow #mode-bar{bottom:calc(68px + env(safe-area-inset-bottom,0px)) !important}
 .mode-switch-btn{all:unset;cursor:pointer;background:rgba(35,22,8,.88);backdrop-filter:blur(12px);color:#f6e7bd;border:1px solid rgba(201,164,92,.6);border-radius:999px;padding:6px 16px;font-size:12.5px;font-weight:600;display:flex;align-items:center;gap:7px;box-shadow:0 4px 18px rgba(0,0,0,.4), 0 0 10px rgba(201,164,92,.25);transition:all .25s ease;white-space:nowrap}
 .mode-switch-btn:hover{background:rgba(60,38,12,.98);border-color:#fff;box-shadow:0 6px 24px rgba(0,0,0,.55), 0 0 18px rgba(201,164,92,.5);transform:scale(1.05)}
 .mode-switch-btn.cinema-active{background:linear-gradient(135deg, #c9a45c, #8f5f1c);color:#fff;border-color:#fff}
@@ -1508,7 +1508,7 @@ export default function Book(){
         startCinema(isNaN(pg) ? 1 : pg);
       } else if (p) {
         const pg=parseInt(p,10);
-        if(!isNaN(pg)&&pg>0){
+        if(!isNaN(pg)&&pg>=0){
           setIntro(false);
           setTimeout(()=>goPage(pg),400);
         }
@@ -2303,13 +2303,17 @@ export default function Book(){
       if(target.closest('button, a, input, textarea, select, .choice-card, .choice-btn, .slbar, .drag-handle-corner, .rotbtn, .crest-frame')) return;
     }
     setMenu(null);
+    if(cur===0){
+      if(narrow) goPage(1);
+      else go(1);
+      return;
+    }
     const isLeft = e.clientX < window.innerWidth / 2;
     if(narrow){
       if(isLeft) step(-1);
       else step(1);
       return;
     }
-    if(cur===0){go(1);return}
     if(cur===maxCur){go(cur-1);return}
     step(isLeft ? -1 : 1);
   };
@@ -2671,14 +2675,20 @@ export default function Book(){
     if(p.t==='cover'){
       const covTitle=p.title||'60 NĂM';
       const covSub=p.yrs||'MỘT DÒNG KÝ ỨC';
-      const covTxt=p.txt||'Trường THPT Quế Võ số 1\n1966 — 2026';
+      const covTxt=p.txt||'TRƯỜNG THPT QUẾ VÕ SỐ 1\n1966 — 2026';
       const covMotto=p.by||'Tự hào truyền thống — Vững bước tương lai';
       return (
         <div className='t-cover'>
-          <div className='lslot' ref={sealRef} style={{visibility:'hidden'}}/>
+          <div className='lslot cover-emblem-badge' ref={sealRef}>
+            {logoOk ? (
+              <img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false}/>
+            ) : (
+              <span className='lgtxt'>60</span>
+            )}
+          </div>
           <TxtBox i={i} field='title' label='Tiêu đề' tag='h1' dataPh='Tiêu đề bìa'>{covTitle}</TxtBox>
           <TxtBox i={i} field='yrs' label='Phụ đề' tag='h2' dataPh='Phụ đề'>{covSub}</TxtBox>
-          <TxtBox i={i} field='txt' label='Tên trường & năm' tag='p' dataPh='Tên trường & năm'>{covTxt}</TxtBox>
+          <TxtBox i={i} field='txt' label='Tên trường & năm' tag='p' dataPh='Tên trường & năm' className='cov-body-txt'>{covTxt}</TxtBox>
           <TxtBox i={i} field='by' label='Khẩu hiệu' tag='em' dataPh='Khẩu hiệu'>{covMotto}</TxtBox>
         </div>
       );
@@ -3061,7 +3071,7 @@ export default function Book(){
     <input ref={vfi} type='file' accept='video/*' hidden onChange={e=>{const f=e.target.files?.[0];e.target.value='';if(f)onVideo(f)}}/>
     <div id='modal' className={modal?'on':''}><div className='card glass'><h3>Đăng nhập biên tập</h3><input placeholder='Email / Tài khoản' value={u} onChange={e=>setU(e.target.value)} autoComplete='username'/><input type='password' placeholder='Mật khẩu' value={pw} onChange={e=>setPw(e.target.value)} autoComplete='current-password' onKeyDown={e=>{if(e.key==='Enter')login()}}/><div className='err'>{err}</div><button className='btn go' onClick={login}>Đăng nhập</button><button className='btn' style={{textAlign:'center'}} onClick={()=>setModal(false)}>Đóng</button></div></div>
     <div id='lb' className={lb?'on':''} onClick={()=>setLb(null)}>{lb&&<figure onClick={e=>e.stopPropagation()}>{lb.v==='yt'?<iframe src={`https://www.youtube.com/embed/${lb.src}?autoplay=1&rel=0`} allow='autoplay; encrypted-media; fullscreen' allowFullScreen/>:lb.v==='file'?<video src={lb.src} controls autoPlay playsInline/>:<img src={lb.src} alt={lb.cap} style={lb.rot?{transform:`rotate(${lb.rot}deg)`,...(lb.rot%180!==0?{maxWidth:'78vh',maxHeight:'88vw'}:{})}:undefined}/>}<figcaption>{lb.cap}</figcaption></figure>}</div>
-    <div id='logo60' className={lgMode==='corner'?'corner':''} onClick={logoClick} title={lgMode==='corner'?'Về trang bìa':undefined} style={{left:lg.x,top:lg.y,width:lg.s,height:lg.s,opacity:(intro||!lgReady)?0:1,pointerEvents:(lgMode==='corner'&&!intro)?'auto':'none',transition:lgAnim?undefined:'none'}}>{logoOk?<img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false} onError={()=>setLogoOk(false)}/>:<span className='lgtxt'>60</span>}</div>
+    <div id='logo60' className={lgMode==='corner'?'corner':''} onClick={logoClick} title={lgMode==='corner'?'Về trang bìa':undefined} style={{left:lg.x,top:lg.y,width:lg.s,height:lg.s,opacity:(intro||!lgReady||cur===0)?0:1,pointerEvents:(lgMode==='corner'&&!intro)?'auto':'none',transition:lgAnim?undefined:'none'}}>{logoOk?<img src={LOGO} alt='Logo 60 năm THPT Quế Võ số 1' draggable={false} onError={()=>setLogoOk(false)}/>:<span className='lgtxt'>60</span>}</div>
     <div id='intro' className={intro?'':'hide'}><div className='school-gate-bg' aria-hidden='true'/><div className='in' style={{top:'-12vh'}}><h1>60 NĂM</h1><p>MỘT DÒNG KÝ ỨC</p><button className='btn' onClick={()=>{tryStartMusic(true);setIntro(false);go(0);}}>Mở cuốn sách ký ức</button></div></div>
     {/* Hidden background YouTube audio player */}
     <div
